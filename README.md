@@ -44,11 +44,11 @@ An Example:
 1. An Image is uploaded via HTTP, the response is the generated ImageID
 2. The Image is saved in the database along with its ID, there will be created a row in every of the other tables with status=0
 3. A Software (again, for example Face Detection) requests new work.
-    3.1 The endpoint chooses a random image from the table belonging to the requesting software where "status = 0" and answers with its id
-    3.2 The software has to get the image now via another endpoint, supplying the ImageID
-    3.3 The software processes the Image (detects faces)
-4. The software now uploads the work, again supplying the ImageID.
-5. The endpoint updates the table with the uploaded data.
+4. The endpoint chooses a random image from the table belonging to the requesting software where "status = 0" and answers with its id
+5. The software has to get the image now via another endpoint, supplying the ImageID
+6. The software processes the Image (detects faces)
+7. The software now uploads the work, again supplying the ImageID.
+8. The endpoint updates the table with the uploaded data.
 
 ----
 
@@ -56,5 +56,5 @@ An Example:
 ### Setup
 
 1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except if and Filename (no matter in which table) have to have a standard value, for example NULL.
-    1.1 The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
-    1.2 After that, you can create as much tables as you want, one for each softeare that will be processing the images
+2. The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
+3. After that, you can create as much tables as you want, one for each softeare that will be processing the images
