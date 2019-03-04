@@ -1,12 +1,60 @@
+:warning: This is under heavy development. Do not use if you dont know exactly what you're doing!
+
 # Heartbeat
 
-The "Nachfolger" (new version) of my old Projects "Northern Lights" and "insta_rev", a better approach of an Database to store Images and analyze them, via various computer vision techniques, such as Face Detection.
+The "Nachfolger" (new version) of my old Projects "Northern Lights" and "insta_rev", a better approach of a Database to store Images and analyze them, via various computer vision techniques, such as Face Detection.
+
+----
 
 ### Idea
-There is an endpoint (endpoint.py) software, where you can submit an image either via an url or via HTTP File upload. The images are saved and submitted into a database (MySQL). Every image gets an ID and is saved in a table along with its states. These states
-You can use different techniques to process the images. 
+There is an endpoint (endpoint.py) software, where you can submit an image either via an url or via HTTP File upload. The images are saved and submitted into a database (MySQL). Every image gets an ID and is saved in a table along with its states. These states represent the status of the software that has already processed the image. The database is structured like this:
+#### 1. Table: Overview (Filename and Meta-Data)
+    
+
+| id | Filename | uploaded_date | origin | other_data |
+| -------- | -------- | -------- | -------- | -------- |
+|KLASF | KSPNVCUEPANCGDZ.jpg     |  1551691084    | public_webcam | blargh
+|UDFH8 | IHDIOUCHJKSDHSLA.jpg     |  1551691085    | instagram     | foo
+
+This Table is the basic information table, where information about the image is saved and can be looked up.
+
+#### 2. Table: First Software (in this example: Face Detection)
+    
+
+| id | status | info | ... |
+| -------- | -------- | -------- | -------- |
+| KLASF     | 1     | {['x':200,'y':363,'w':200,'h':200]}     | ... |
+| UDFH8     | 0     | -     | ... |
+
+Every Table of this kind has its own class in the code, which knows what to do with the data in the table. That class has a getter and a setter, that can read and write the table. In this Example the first Image has been processed and one face was found. The other one still needs to be processed
+
+#### 3. Table: Additional Tables for software
+
+For some Software it can be a good idea to create a second table, where it can save some data, which is only needed or useful for this software. This needs to be supported by the endpoint class in the code of the software. 
+An Example:
+
+
+| face_id | face_encoding | id |
+| -------- | -------- | -------- |
+| KDLKJEHJD     | [blargh]    | KLASF     |
+
+
+----
+### Flow
+1. An Image is uploaded via HTTP, the response is the generated ImageID
+2. The Image is saved in the database along with its ID, there will be created a row in every of the other tables with status=0
+3. A Software (again, for example Face Detection) requests new work.
+    3.1 The endpoint chooses a random image from the table belonging to the requesting software where "status = 0" and answers with its id
+    3.2 The software has to get the image now via another endpoint, supplying the ImageID
+    3.3 The software processes the Image (detects faces)
+4. The software now uploads the work, again supplying the ImageID.
+5. The endpoint updates the table with the uploaded data.
+
+----
+
 
 ### Setup
 
-1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too.
-    1.1 
+1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except if and Filename (no matter in which table) have to have a standard value, for example NULL.
+    1.1 The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
+    1.2 After that, you can create as much tables as you want, one for each softeare that will be processing the images
