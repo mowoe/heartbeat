@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 import os
 import time
 import hashlib
+import heartbeat_database
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -68,6 +69,8 @@ class Client(object):
         pass
 
 if __name__ == "__main__":
+    hdb = heartbeat_database.HeartDB("host","user","password","db")
+    hdb.connect()
     serv = Server()
     serv.setup()
     serv.listen()
