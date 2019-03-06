@@ -38,10 +38,12 @@ class HeartDB(object):
         finished_result = 0
         current_connection = self.cnx.get_connection()
         cursor = cnx.cursor()
-        query = "SELECT * FROM %s WHERE status=0 ORDER BY id ASC"
+        query = "SELECT id FROM %s WHERE status=0 ORDER BY id ASC LIMIT 1"
         cursor.execute(query, (table,))
         for result in cursor:
             finished_result = result
+        query = "UPDATE %s SET status = %s WHERE id=%s"
+        cursor.execute(query, (table, str(int(time.time())),finished_result))
         cursor.close()
         current_connection.close()
         return finished_result
@@ -53,8 +55,8 @@ class HeartDB(object):
         finished_result = 1
         current_connection = self.cnx.get_connection()
         cursor = cnx.cursor()
-        query = "INSERT INTO %s (id,status,info) VALUES (%s, %s, %s)"
-        cursor.execute(query, (table, imageid, 1, additional_information))
+        query = "UPDATE %s SET status=%s, info=%s WHERE id = %s;"
+        cursor.execute(query, (1, additional_information,imageid))
         cursor.close()
         current_connection.close()
         return finished_result
