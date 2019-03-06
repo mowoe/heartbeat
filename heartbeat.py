@@ -5,6 +5,7 @@ import os
 import time
 import hashlib
 import heartbeat_database
+import thread
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -33,16 +34,19 @@ class Server(object):
         self.webapp.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
         self.webapp.add_url_rule('/add_image', "image_add", EndpointAction(self.add_image))
         self.webapp.add_url_rule('/add_image_via_file', "file_add", EndpointAction(self.add_file), methods=['POST'])
-        self.webapp.add_url_rule('/request_work/<table>', request_work, EndpointAction(self.request_work))
+        self.webapp.add_url_rule('/request_work/<table>', "request_work", EndpointAction(self.request_work))
 
     def constr_resp(self,status,reason="healthy"):
         return json.dumps({'status':status, 'reason':reason})
 
     def add_file(self,args):
+        start = time.time()
         if 'file' not in request.files:
+            print("This request took {} seconds".format(str(time.time()-start)))
             return self.constr_resp("error","no file part")
         file = request.files['file']
         if file.filename == '':
+            print("This request took {} seconds".format(str(time.time()-start)))
             return self.constr_resp("error","no file supplied")
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -50,8 +54,10 @@ class Server(object):
             hex_dig = hash_object.hexdigest()
             new_filename = str(hex_dig) + "." + filename.split(".")[-1]
             file.save(os.path.join(self.webapp.config['UPLOAD_FOLDER'], new_filename))
+            print("This request took {} seconds".format(str(time.time()-start)))
+            thread.start_new_thread(self.HeartDB.add_image, (new_filename,"unknown"))
             return self.constr_resp("success")
-
+        
     def add_image(self,args):
         img_url = request.args.get('img_url')
         information = request.args.get('img_info')
@@ -79,9 +85,9 @@ class Client(object):
         pass
 
 if __name__ == "__main__":
-    hdb = heartbeat_database.HeartDB("host","user","password","db")
+    hdb = heartbeat_database.HeartDB()
     hdb.init_tables(["face_recognition"])
     hdb.connect()
-    serv = Server()
+    serv = Server(hdb)
     serv.setup()
     serv.listen()
