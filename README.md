@@ -44,7 +44,7 @@ An Example:
 1. An Image is uploaded via HTTP, the response is the generated ImageID
 2. The Image is saved in the database along with its ID, there will be created a row in every of the other tables with status=0
 3. A Software (again, for example Face Detection) requests new work.
-4. The endpoint chooses an image with the earliest upload date from the table belonging to the requesting software where "status = 0" and answers with its id
+4. The endpoint chooses an image with the earliest upload date from the table belonging to the requesting software where "status = 0" and answers with its id. At the same time the status gets updated to the current timestamp. Thsi prevents another worker requesting this image, but it has also a "timeout capability", the software can check if the work is taking to long and can then free the image for work.
 5. The software has to get the image now via another endpoint, supplying the ImageID
 6. The software processes the Image (detects faces)
 7. The software now uploads the work, again supplying the ImageID.

@@ -23,15 +23,17 @@ class EndpointAction(object):
         return self.response
 
 class Server(object):
-    def __init__(self,port=9721,bind_address='127.0.0.1'):
+    def __init__(self, hdb, port=9721,bind_address='127.0.0.1'):
         self.port = port
         self.bind_address = bind_address
         self.webapp = Flask(__name__)
+        self.HeartDB = hdb
 
     def setup(self):
         self.webapp.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
         self.webapp.add_url_rule('/add_image', "image_add", EndpointAction(self.add_image))
         self.webapp.add_url_rule('/add_image_via_file', "file_add", EndpointAction(self.add_file), methods=['POST'])
+        self.webapp.add_url_rule('/request_work/<table>', request_work, EndpointAction(self.request_work))
 
     def constr_resp(self,status,reason="healthy"):
         return json.dumps({'status':status, 'reason':reason})
@@ -61,6 +63,14 @@ class Server(object):
         response = Response(self.constr_resp("success"), status=200, headers={})
         return response
 
+    def request_work(self,table):
+        print("Table: {}".format(table))
+        resp_id = self.HeartDB.get_work(table)
+        return Response(self.constr_resp(resp_id),status=200)
+
+    def submit_work(self,args):
+        pass
+
     def listen(self):
         self.webapp.run(port=self.port,host=self.bind_address)
 
@@ -70,6 +80,7 @@ class Client(object):
 
 if __name__ == "__main__":
     hdb = heartbeat_database.HeartDB("host","user","password","db")
+    hdb.init_tables(["face_recognition"])
     hdb.connect()
     serv = Server()
     serv.setup()
