@@ -55,6 +55,6 @@ An Example:
 
 ### Setup
 
-1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except if and Filename (no matter in which table) have to have a standard value, for example NULL.
+1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except id and Filename (no matter in which table) have to have a standard value, for example NULL.
 2. The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
 3. After that, you can create as much tables as you want, one for each softeare that will be processing the images
