@@ -19,7 +19,7 @@ class EndpointAction(object):
     def __init__(self,action):
         self.action = action
 
-    def __call__(self, *args):
+    def __call__(self, **args):
         self.response = self.action(args)
         return self.response
 
@@ -70,6 +70,7 @@ class Server(object):
         return response
 
     def request_work(self,table):
+        table = table["table"]
         print("Table: {}".format(table))
         resp_id = self.HeartDB.get_work(table)
         return Response(self.constr_resp(resp_id),status=200)

@@ -47,12 +47,13 @@ class HeartDB(object):
         finished_result = 0
         current_connection = self.cnx.get_connection()
         cursor = current_connection.cursor()
-        query = "SELECT id FROM %s WHERE status=0 ORDER BY id ASC LIMIT 1"
-        cursor.execute(query, (table,))
+        query = "SELECT id FROM "+table+" WHERE status=0 ORDER BY id ASC LIMIT 1"
+        cursor.execute(query)
         for result in cursor:
-            finished_result = result
-        query = "UPDATE %s SET status = %s WHERE id=%s"
-        cursor.execute(query, (table, str(int(time.time())),finished_result))
+            finished_result = result[0]
+        
+        query = "UPDATE "+table+" SET status = %s WHERE id=%s"
+        cursor.execute(query, (int(time.time()),finished_result))
         current_connection.commit()
         cursor.close()
         current_connection.close()
