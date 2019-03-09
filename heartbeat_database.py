@@ -2,9 +2,11 @@ import mysql.connector
 from mysql.connector import pooling
 import time
 import json 
+import re
 
 class HeartDB(object):
     def __init__(self):
+        self.table_name_validator = re.compile(r'^[0-9a-zA-Z_\$]+$')
         self.dbconfig = json.load(open("db_auth.json","rb"))
 
     def init_tables(self, tables):
@@ -21,27 +23,28 @@ class HeartDB(object):
         finished_result = 1
         current_connection = self.cnx.get_connection()
         cursor = current_connection.cursor()
-        print("aquiring connection took {}".format(time.time()-start))
         start = time.time()
         query = "INSERT INTO images (filename,origin) VALUES (%s, %s)"
         cursor.execute(query, (path,origin))
         query = "SELECT id FROM images WHERE filename=%s"
         cursor.execute(query, (path,))
-        print("Selecting and inserting first time took  {}".format(time.time()-start))
         start = time.time()
         for result in cursor:
             imageID = str(result[0])
+        
         for additional_table in self.tables:
-            query = "INSERT INTO "+additional_table+" (id) VALUES ("+imageID+")" #THIS IS NOT SQLi SAFE!!!
-            cursor.execute(query, (str(imageID)))
-        print("additional tables took  {}".format(time.time()-start))
+            if not self.table_name_validator.match(additional_table):
+                return "sqli detected"
+            query = "INSERT INTO "+additional_table+" (id) VALUES (%s)"
+            cursor.execute(query, (str(imageID),))
         start = time.time()
         current_connection.commit()
         current_connection.close()
-        print("closing connection took  {}".format(time.time()-start))
         return finished_result
 
     def get_work(self,table):
+        if not self.table_name_validator.match(table):
+            return "sqli detected"
         if table not in self.tables:
             return "Not a valid table!"
         finished_result = 0
@@ -61,6 +64,8 @@ class HeartDB(object):
 
     def submit_work(self, table, imageid, additional_information):
         finished_result = 1
+        if not self.table_name_validator.match(table):
+            return "sqli detected"
         if table not in self.tables:
             return "Not a valid table!"
         finished_result = 1
