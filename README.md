@@ -58,3 +58,9 @@ An Example:
 1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except id and Filename (no matter in which table) have to have a standard value, for example NULL.
 2. The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
 3. After that, you can create as much tables as you want, one for each softeare that will be processing the images
+
+### A little sitenote:
+
+This can be used for very evil stuff, but it was meant to show how easy it is to build a mass surveillance system.
+
+Mass surveillance is very very very bad! (Just to make that clear)
