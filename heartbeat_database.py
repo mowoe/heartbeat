@@ -77,3 +77,15 @@ class HeartDB(object):
         cursor.close()
         current_connection.close()
         return finished_result
+
+    def get_filename_from_id(self,imgid):
+        current_connection = self.cnx.get_connection()
+        cursor = current_connection.cursor()
+        sql = "SELECT filename FROM images WHERE id = %s"
+        cursor.execute(sql, (imgid,))
+        for res in cursor:
+            finished_result = res[0]
+        current_connection.commit()
+        cursor.close()
+        current_connection.close()
+        return finished_result

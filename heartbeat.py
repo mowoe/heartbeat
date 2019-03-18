@@ -1,4 +1,4 @@
-from flask import Flask, Response, request, redirect, url_for
+from flask import Flask, Response, request, redirect, url_for, make_response
 import json
 from werkzeug.utils import secure_filename
 import os
@@ -35,6 +35,7 @@ class Server(object):
         self.webapp.add_url_rule('/add_image', "image_add", EndpointAction(self.add_image))
         self.webapp.add_url_rule('/add_image_via_file', "file_add", EndpointAction(self.add_file), methods=['POST'])
         self.webapp.add_url_rule('/request_work/<table>', "request_work", EndpointAction(self.request_work))
+        self.webapp.add_url_rule('/get_image/<id>', "get_image", EndpointAction(self.get_image))
 
     def constr_resp(self,status,reason="healthy"):
         return json.dumps({'status':status, 'reason':reason})
@@ -68,6 +69,15 @@ class Server(object):
             
         response = Response(self.constr_resp("success"), status=200, headers={})
         return response
+
+    def get_image(self,args):
+        imgid = args['id']
+        filename = self.HeartDB.get_filename_from_id(imgid)
+        print("filename")
+        headers = {"Content-Disposition": "attachment; filename=%s" % filename}
+        with open(os.path.join(self.webapp.config['UPLOAD_FOLDER'], filename), 'r') as f:
+            body = f.read()
+        return make_response((body, headers))
 
     def request_work(self,table):
         table = table["table"]
