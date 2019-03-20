@@ -71,7 +71,7 @@ class HeartDB(object):
         finished_result = 1
         current_connection = self.cnx.get_connection()
         cursor = current_connection.cursor()
-        query = "UPDATE %s SET status=%s, info=%s WHERE id = %s;"
+        query = "UPDATE "+table+" SET status=%s, info=%s WHERE id = %s;"
         cursor.execute(query, (1, additional_information,imageid))
         current_connection.commit()
         cursor.close()

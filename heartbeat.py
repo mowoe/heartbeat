@@ -36,6 +36,7 @@ class Server(object):
         self.webapp.add_url_rule('/add_image_via_file', "file_add", EndpointAction(self.add_file), methods=['POST'])
         self.webapp.add_url_rule('/request_work/<table>', "request_work", EndpointAction(self.request_work))
         self.webapp.add_url_rule('/get_image/<id>', "get_image", EndpointAction(self.get_image))
+        self.webapp.add_url_rule('/submit_work',"submit_work",EndpointAction(self.submit_work))
 
     def constr_resp(self,status,reason="healthy"):
         return json.dumps({'status':status, 'reason':reason})
@@ -73,7 +74,7 @@ class Server(object):
     def get_image(self,args):
         imgid = args['id']
         filename = self.HeartDB.get_filename_from_id(imgid)
-        print("filename")
+        print("filename {}".format(filename))
         headers = {"Content-Disposition": "attachment; filename=%s" % filename}
         with open(os.path.join(self.webapp.config['UPLOAD_FOLDER'], filename), 'r') as f:
             body = f.read()
@@ -86,7 +87,15 @@ class Server(object):
         return Response(self.constr_resp(resp_id),status=200)
 
     def submit_work(self,args):
-        pass
+        try:
+            imageid = request.args.get('imageid')
+            table = request.args.get('table')
+            info = request.args.get('info')
+        except Exception as e:
+            print(e)
+            return Response(self.constr_resp("Error parsing"),status=400)
+        self.HeartDB.submit_work(table, imageid, info)
+        return Response(self.constr_resp("done"),status=200)
 
     def listen(self):
         self.webapp.run(port=self.port,host=self.bind_address)
