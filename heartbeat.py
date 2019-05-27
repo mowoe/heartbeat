@@ -104,10 +104,12 @@ class Client(object):
     def __init__(self):
         pass
 
+hdb = heartbeat_database.HeartDB()
+hdb.init_tables(["face_recognition","face_encodings"])
+hdb.connect()
+serv = Server(hdb)
+serv.setup()
+app = serv.webapp
+
 if __name__ == "__main__":
-    hdb = heartbeat_database.HeartDB()
-    hdb.init_tables(["face_recognition","face_encodings"])
-    hdb.connect()
-    serv = Server(hdb)
-    serv.setup()
     serv.listen()
