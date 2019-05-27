@@ -24,7 +24,7 @@ class EndpointAction(object):
         return self.response
 
 class Server(object):
-    def __init__(self, hdb, port=9721,bind_address='127.0.0.1'):
+    def __init__(self, hdb, port=9721,bind_address='0.0.0.0'):
         self.port = port
         self.bind_address = bind_address
         self.webapp = Flask(__name__)
@@ -106,7 +106,7 @@ class Client(object):
 
 if __name__ == "__main__":
     hdb = heartbeat_database.HeartDB()
-    hdb.init_tables(["face_recognition"])
+    hdb.init_tables(["face_recognition","face_encodings"])
     hdb.connect()
     serv = Server(hdb)
     serv.setup()

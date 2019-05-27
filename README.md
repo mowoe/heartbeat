@@ -2,7 +2,7 @@
 
 # Heartbeat
 
-The "Nachfolger" (new version) of my old Projects "Northern Lights" and "insta_rev", a better approach of a Database to store Images and analyze them, via various computer vision techniques, such as Face Detection. It is mainly used and optimized to work with face recognition, but I think you can adopt it to work with other techniques.
+The "Nachfolger" (new version) of my old Projects "Northern Lights" and "insta_rev", a better approach of a Database to store Images and analyze them, via various computer vision techniques, such as Face Detection.
 
 ----
 
@@ -58,6 +58,14 @@ An Example:
 1. A MySQL (or mariadb) Database, in future maybe other ones will be supported too. **ALL** columns except id and Filename (no matter in which table) have to have a standard value, for example NULL.
 2. The first Table has to be created with the four mandatory columns (id, Filename, uploaded_date, origin). 
 3. After that, you can create as much tables as you want, one for each softeare that will be processing the images
+
+### Docker Container Build
+
+For an easier build, there is a docker Image, which you have to build by yourself. A Dockerfile is located in the docker/ folder. Steps to build:
+
+1. Create a db_auth.json file with the credentials to a mysql database, under the scheme of db_auth_sample.sjon
+2. Build it!
+3. Run it!
 
 ### A little sitenote:
 
