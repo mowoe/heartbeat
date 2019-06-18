@@ -61,7 +61,7 @@ An Example:
 
 ### Docker Container Build
 
-For an easier build, there is a docker Image, which you have to build by yourself. A Dockerfile is located in the docker/ folder. Steps to build:
+For an easier build, there is a docker Image, which you have to build by yourself. A Dockerfile is located in this folder. Steps to build:
 
 1. Create a db_auth.json file with the credentials to a mysql database, under the scheme of db_auth_sample.sjon
 2. Build it!

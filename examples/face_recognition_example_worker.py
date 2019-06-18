@@ -6,35 +6,57 @@ import cgi
 import json
 import sys
 import cv2
+import threading
+import hashlib
+import time
+import os
 
 verbose = int(sys.argv[1])
 print(verbose)
 
-def get_work():
-    resp = requests.get("http://localhost:9721/request_work/face_recognition")
-    resp_json = resp.json()
-    image_id = resp_json["status"]
-    response = urllib.request.urlopen("http://localhost:9721/get_image/"+str(image_id))
-    _, params = cgi.parse_header(response.headers.get('Content-Disposition', ''))
-    filename = params['filename']
-    fname_end = filename.split(".")[-1]
-    print("Received ImageID: {}".format(image_id))
-    urllib.request.urlretrieve("http://localhost:9721/get_image/"+str(image_id),"face_rec_fram."+fname_end)
-    print("downloaded Image!")
-    image = face_recognition.load_image_file("face_rec_fram."+fname_end)
-    print("detecting...")
-    face_locations = face_recognition.face_locations(image)
-    print(face_locations)
-    resp = requests.get("http://localhost:9721/submit_work?imageid="+str(image_id)+"&table=face_recognition&info="+json.dumps(face_locations))
-    if verbose:
-        cvimg = cv2.imread("face_rec_fram."+fname_end)
-        for face_location in face_locations:
-            top, right, bottom, left = face_location
-            print("A face is located at pixel location Top: {}, Left: {}, Bottom: {}, Right: {}".format(top, left, bottom, right))
-            cv2.rectangle(cvimg,(left,top),(right,bottom),(255,0,0),2)
-        cv2.imshow("faces",cv2.resize(cvimg,(0,0),fx=0.5,fy=0.5))
-        cv2.waitKey(0)
+host = sys.argv[2]
+
+class FaceRecThread(threading.Thread):
+    def __init__(self,threadID,host):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+    def download_file(self,url):
+        hash_object = hashlib.sha256(str(time.time()).encode())
+        hex_dig = hash_object.hexdigest()
+        local_filename = str(hex_dig) + ".png"
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192): 
+                    if chunk: 
+                        f.write(chunk)
+        return local_filename
+
+    def get_work(self):
+        resp = requests.get("http://"+host+":5000/api/request_work?work_type=face_recognition")
+        resp_json = resp.json()
+        image_id = resp_json["status"]
+        print(image_id)
+        fname = self.download_file("http://"+host+":5000/api/download_image?image_id="+str(image_id))
+        print("downloaded Image!")
+        try:
+            image = face_recognition.load_image_file(fname)
+            print("detecting...")
+            face_locations = face_recognition.face_locations(image)
+            print(face_locations)
+            resp = requests.get("http://"+host+":5000/api/submit_work?image_id="+str(image_id)+"&work_type=face_recognition&result="+json.dumps(face_locations))
+        except Exception as e:
+            print(e)
+            resp = requests.get("http://"+host+":5000/api/submit_work?image_id="+str(image_id)+"&work_type=face_recognition&result=error")
+        finally:
+            os.remove(fname)
+
+    def run(self):
+        while True:
+            print("Getting Work: {}".format(self.threadID))
+            self.get_work()
 
 if __name__ == "__main__":
-    while True:
-        get_work()
+    for x in range(int(sys.argv[3])):
+        thread = FaceRecThread(x,host)
+        thread.start()
