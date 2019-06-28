@@ -5,7 +5,7 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-host,port = "localhost",str(5000)
+host,port = "mowoe.com",str(9721)
 
 mypath = sys.argv[1]
 

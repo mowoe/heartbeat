@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request, make_response
-from flask import send_file, render_template
+from flask import send_file, render_template, redirect
 import hashlib
 from werkzeug.utils import secure_filename
 import time
@@ -18,7 +18,7 @@ import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import numpy as np
 import requests
-
+import cv2
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -27,7 +27,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 dbconfig = json.load(open("db_auth.json","rb"))
 mysql_db = peewee.MySQLDatabase(**dbconfig)
 model_path = "./examples/trained_knn_model.clf"
-distance_threshold = 0.4
+distance_threshold = 0.6
+near_images_to_show = 5
+
 
 
 class Image(peewee.Model):
@@ -40,17 +42,14 @@ class Image(peewee.Model):
 
 class Results(peewee.Model):
     image_id = CharField()#ForeignKeyField(Image, backref='id')
-    result_type = CharField()
+    result_type = CharField(max_length=7000)
     result = CharField()
     class Meta:
         database = mysql_db
 
-class ResultStatus(peewee.Model):
-    image_id = CharField()#ForeignKeyField(Image, backref='id')
-    result_type = CharField()
-    class Meta:
-        database = mysql_db
-
+mysql_db.connect()
+mysql_db.create_tables([Image,Results])
+mysql_db.close()
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -109,7 +108,10 @@ def request_work():
     for x in query:
         results.append(x.id)
     print("get work took {} seconds".format(time.time()-start))
-    return constr_resp(str(results[0]))
+    if len(results) > 0:
+        return constr_resp(str(results[0]))
+    else:
+        return constr_resp("error","empty")
 
 @app.route("/api/submit_work",methods=['POST'])
 def submit_work():
@@ -159,7 +161,7 @@ def get_matching_images():
 
 @app.route("/")
 def main():
-    return render_template("index.jinja")
+    return render_template("index.html")
 
 @app.route("/upload")
 def upload_frontend():
@@ -168,23 +170,90 @@ def upload_frontend():
 @app.route("/get_matching_images",methods=['POST'])
 def frontend_matching_images():
     with open(model_path, 'rb') as f:
-            knn_clf = pickle.load(f)
+        knn_clf = pickle.load(f)
     file = request.files['file']
-    file.save("facerec_img.png")
-    X_img = face_recognition.load_image_file("facerec_img.png")
-    X_face_locations = face_recognition.face_locations(X_img)
+    file.save(file.filename)
+    print(file.filename)
+    #X_img = face_recognition.load_image_file(file.filename)
+    X_img = cv2.imread(file.filename)
+    X_img = X_img[:, :, ::-1]
+    try:
+        X_face_locations = face_recognition.face_locations(X_img)
+    except TypeError:
+        print("no face found?")
+        return render_template("result.html",image=[])
     if len(X_face_locations) == 0:
         return []
+    print(1)
     faces_encodings = face_recognition.face_encodings(X_img, known_face_locations=X_face_locations)
+    closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=near_images_to_show)
+    with open("trained_knn_list.clf",'rb') as f:
+        all_labels = pickle.load(f)
+    print(closest_distances[1][0])
+    res = []
+    for x in range(len(closest_distances[1][0])):
+        score = closest_distances[0][0][x]
+        label = all_labels[closest_distances[1][0][x]]
+        if score <= distance_threshold:
+            res.append({"id":label,"score":str(score)[:5]})
+    print(res)
+    os.remove(file.filename)
+    return render_template("result.html",images=res)
 
-    closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=1)
-    are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
-    results = [(pred, loc) if rec else ("unknown", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
-    print(results)
-    return render_template("result.html",images=[results[0][0]])
+@app.route("/admin",methods=['GET'])
+def admin_panel():
+    action = request.args.get('action')
+    if type(action) != type(None):
+        if action == "update_knn":
+            X = []
+            y = []
+            counter = 0
+            work_type = 'face_encodings'
+            query = Results.select().where(Results.result_type==work_type)
+            results = []
+            for x in query:
+                results.append([x.image_id,x.id,x.result])
+            all_encodings = results
+            for encoding in all_encodings:
+                print(encoding)
+                face_bounding_boxes = json.loads(encoding[2])["encoding"]
+                if len(face_bounding_boxes) > 2:
+                    X.append(np.array(face_bounding_boxes))
+                    y.append(encoding[0])
+                    counter+=1
+            print("found {} encodings".format(counter))
+
+            n_neighbors = int(round(math.sqrt(len(X))))
+
+            knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm="ball_tree", weights='distance')
+            knn_clf.fit(X, y)
+
+            with open(model_path, 'wb') as f:
+                pickle.dump(knn_clf, f)
+            with open("trained_knn_list.clf",'wb') as f:
+                pickle.dump(y,f)
+        return redirect("/admin")
+    else:
+        return render_template("admin.html")
+
+@app.route("/upload_new",methods=['POST','GET'])
+def upload_via_frontend():
+    if 'file' not in request.files:
+        return render_template("upload_new.html")
+    file = request.files['file']
+    if file.filename == '':
+        return render_template("upload_new.html")
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        hash_object = hashlib.sha256(str(time.time()).encode())
+        hex_dig = hash_object.hexdigest()
+        new_filename = str(hex_dig) + "." + filename.split(".")[-1]
+        file.save(os.path.join(UPLOAD_FOLDER, new_filename))
+        image = Image(filename=new_filename)
+        image.save()
+        return render_template("success.html")
+    return render_template("upload_new.html")
+
 
 if __name__ == "__main__":
-    mysql_db.connect()
-    mysql_db.create_tables([Image,Results,ResultStatus])
-    mysql_db.close()
     app.run(debug=True)

@@ -1,0 +1,30 @@
+<html>
+    <head>
+        <title>Heartbeat</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="static/style.css">
+        <link href="https://fonts.googleapis.com/css?family=Monoton|Nunito+Sans|Roboto&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Muli&display=swap" rel="stylesheet"> 
+    </head>
+    <body>
+        <div class="main-container">
+            <h1>Heartbeat</h1>
+            <h5>Ergebnisse</h5>
+            Für dein Gesicht haben wir folgende Bilder gefunden:
+            <div class="result_images">
+                {% for image in images %}
+                <div class="oresult">
+                    <img src="/api/download_image?image_id={{image.id}}" alt="result" class="result_image">
+                    <div class="overlay">
+                            <div class="matchtext">
+                            {{image.score}}
+                            </div>
+                        </div>                    
+                </div>
+                {% endfor %}
+            </div>
+            <br><br>
+           Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde. 
+        </div>
+    </body>
+</html>

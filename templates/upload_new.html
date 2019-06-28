@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>Heartbeat</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link rel="stylesheet" href="static/style.css">
+        <link href="https://fonts.googleapis.com/css?family=Monoton|Nunito+Sans|Roboto&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Muli&display=swap" rel="stylesheet"> 
+    </head>
+    <body>
+        <div class="main-container">
+            <h1>Heartbeat</h1>
+            <h5>Diese Seite ist nur zum Hochladen von Bildern für die Heartbeat Datenbank, du wirst also kein Ergebnis bekommen und das hochgeladene Bild kann anderen Besuchern anzeigeigt werden.</h5>
+            <form method="post" action="/upload_new" enctype="multipart/form-data">
+                <label>Bild auswählen (*.png, *.jpg usw.)
+                    <input name="file" type="file" size="50" accept="image/*"> 
+                </label>
+                <div class="grbckgrnd">  
+                    <button class="grbutton" >Hochladen</button>
+                </div>
+            </form>
+            <br><br>
+           Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde. 
+        </div>
+    </body>
+</html>
