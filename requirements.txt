@@ -3,3 +3,6 @@ face-recognition-models==0.3.0
 Flask==1.0.2
 peewee==3.9.4
 requests==2.21.0
+scikit-image==0.14.2
+scikit-learn==0.20.1
+
