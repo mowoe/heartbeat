@@ -37,7 +37,7 @@ if not testing:
     dbconfig = json.load(open("db_auth.json","rb"))
     mysql_db = peewee.MySQLDatabase(**dbconfig)
 else:
-    sqlite_db = SqliteDatabase('my_app.db', pragmas={'journal_mode': 'wal'})
+    mysql_db = SqliteDatabase('my_app.db', pragmas={'journal_mode': 'wal'})
 
 model_path = "./examples/trained_knn_model.clf"
 distance_threshold = 0.6
@@ -63,7 +63,7 @@ if not testing:
     mysql_db.create_tables([Image,Results])
     mysql_db.close()
 else:
-    sqlite_db.create_tables([Image,Results])
+    mysql_db.create_tables([Image,Results])
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -74,12 +74,14 @@ def constr_resp(status,reason="healthy"):
 
 @app.before_request
 def _db_connect():
-    mysql_db.connect()
+    if not testing:
+        mysql_db.connect()
 
 @app.teardown_request
 def _db_close(exc):
-    if not mysql_db.is_closed():
-        mysql_db.close()
+    if not testing:
+        if not mysql_db.is_closed():
+            mysql_db.close()
 
 @app.route("/api/add_image")
 def add_image():
