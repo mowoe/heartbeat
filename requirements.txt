@@ -1,0 +1,5 @@
+face-recognition==1.2.3
+face-recognition-models==0.3.0
+Flask==1.0.2
+peewee==3.9.4
+requests==2.21.0
