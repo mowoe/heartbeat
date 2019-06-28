@@ -18,7 +18,6 @@ import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import numpy as np
 import requests
-import cv2
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -174,14 +173,8 @@ def frontend_matching_images():
     file = request.files['file']
     file.save(file.filename)
     print(file.filename)
-    #X_img = face_recognition.load_image_file(file.filename)
-    X_img = cv2.imread(file.filename)
-    X_img = X_img[:, :, ::-1]
-    try:
-        X_face_locations = face_recognition.face_locations(X_img)
-    except TypeError:
-        print("no face found?")
-        return render_template("result.html",image=[])
+    X_img = face_recognition.load_image_file(file.filename)
+    X_face_locations = face_recognition.face_locations(X_img,model="cnn")
     if len(X_face_locations) == 0:
         return []
     print(1)
