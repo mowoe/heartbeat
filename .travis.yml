@@ -1,3 +1,3 @@
 language: python
-script: python3 heartbeat_new.py --testing true
+script: python3 heartbeat_new.py --testing
 
