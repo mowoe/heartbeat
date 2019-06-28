@@ -29,10 +29,11 @@ args = parser.parse_args()
 
 testing = args.testing
 
-if not os.path.isfile("./db_auth.json"):
-    if type(os.environ.get('DB_PASSWORD')) == type(None):
-        print("No Password supplied!")
-        exit:
+if not testing:
+    if not os.path.isfile("./db_auth.json"):
+        if type(os.environ.get('DB_PASSWORD')) == type(None):
+            print("No Password supplied!")
+            exit()
     db_auth = {
         "host":os.environ.get('DB_HOST'),
         "database":os.environ.get('DB_DATABASE'),
