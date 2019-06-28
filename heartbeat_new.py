@@ -5,7 +5,7 @@ import hashlib
 from werkzeug.utils import secure_filename
 import time
 import os
-from peewee import MySQLDatabase
+from peewee import MySQLDatabase, SqliteDatabase
 from peewee import CharField, ForeignKeyField, DateTimeField, fn
 import peewee
 import datetime
@@ -18,18 +18,30 @@ import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import numpy as np
 import requests
+import argparse
+
+parser = argparse.ArgumentParser(description='Face recognition Software')
+parser.add_argument('--testing', dest='testing', action='store_true',
+                    default=False,
+                    help='If testing is true (CI)')
+
+args = parser.parse_args()
+
+testing = args.testing
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-dbconfig = json.load(open("db_auth.json","rb"))
-mysql_db = peewee.MySQLDatabase(**dbconfig)
+if not testing:
+    dbconfig = json.load(open("db_auth.json","rb"))
+    mysql_db = peewee.MySQLDatabase(**dbconfig)
+else:
+    sqlite_db = SqliteDatabase('my_app.db', pragmas={'journal_mode': 'wal'})
+
 model_path = "./examples/trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
-
-
 
 class Image(peewee.Model):
     filename = CharField()
@@ -46,9 +58,12 @@ class Results(peewee.Model):
     class Meta:
         database = mysql_db
 
-mysql_db.connect()
-mysql_db.create_tables([Image,Results])
-mysql_db.close()
+if not testing:
+    mysql_db.connect()
+    mysql_db.create_tables([Image,Results])
+    mysql_db.close()
+else:
+    sqlite_db.create_tables([Image,Results])
 
 def allowed_file(filename):
     return '.' in filename and \
