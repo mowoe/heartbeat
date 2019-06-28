@@ -1,4 +1,5 @@
 language: python
-before_script: "'python3 heartbeat_new.py' --testing &"
+before_script: 
+  - "'python3 heartbeat_new.py --testing' &"
 script: curl http://localhost:5000/admin
 
