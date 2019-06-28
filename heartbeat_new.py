@@ -45,6 +45,7 @@ UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 if not testing:
     dbconfig = json.load(open("db_auth.json","rb"))
     mysql_db = peewee.MySQLDatabase(**dbconfig)
