@@ -29,6 +29,17 @@ args = parser.parse_args()
 
 testing = args.testing
 
+if not os.path.isfile("./db_auth.json"):
+    if type(os.environ.get('DB_PASSWORD')) == type(None):
+        print("No Password supplied!")
+        exit:
+    db_auth = {
+        "host":os.environ.get('DB_HOST'),
+        "database":os.environ.get('DB_DATABASE'),
+        "user":os.environ.get('DB_USER'),
+        "password":os.environ.get('DB_PASSWORD'),
+    }
+
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__)
