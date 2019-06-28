@@ -81,7 +81,7 @@ def _db_connect():
 def _db_close(exc):
     if not testing:
         if not mysql_db.is_closed():
-            mysql_db.close()
+                mysql_db.close()
 
 @app.route("/api/add_image")
 def add_image():
@@ -266,4 +266,7 @@ def upload_via_frontend():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    if not testing:
+        app.run(debug=True)
+    else:
+        exit(0)
