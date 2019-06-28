@@ -1,6 +1,6 @@
 language: python
 before_script: 
-  - "'python3 heartbeat_new.py --testing' &"
+  - "python3 heartbeat_new.py --testing &"
   - sleep 5
 script: curl http://localhost:5000/admin
 
