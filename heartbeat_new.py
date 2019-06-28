@@ -266,7 +266,4 @@ def upload_via_frontend():
 
 
 if __name__ == "__main__":
-    if not testing:
-        app.run(debug=True)
-    else:
-        exit(0)
+    app.run(debug=True)
