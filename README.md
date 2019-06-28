@@ -1,2 +1,3 @@
 :warning: 
 # Currently Work in Progress, Documentation is being written...
+[![Build Status](https://travis-ci.com/mowoe/heartbeat.svg?branch=master)](https://travis-ci.com/mowoe/heartbeat)
