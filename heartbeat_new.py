@@ -41,6 +41,9 @@ if not testing:
         "password":os.environ.get('DB_PASSWORD'),
     }
 
+if os.environ.get("TESTING") == "1":
+    testing = True
+
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 app = Flask(__name__)

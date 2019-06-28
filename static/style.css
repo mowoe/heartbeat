@@ -1,0 +1,118 @@
+.main-container {
+    background-color: white;
+    margin: auto;
+    margin-top: 20px;
+    width: 50%;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    outline: none;
+}
+
+.round-container {
+    border-radius: 10px;
+    width: 90%;
+    color:white;
+    background-color:  #556270;
+    
+    padding: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin: auto;
+    margin-top: 15px;
+}
+
+body {
+    background: #4ECDC4;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to right, #4ECDC4, #3a7bd5);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #4ECDC4, #3a7bd5); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    
+    
+  font-family: 'Nunito Sans', sans-serif;
+}
+
+.grbutton {
+    border-radius: 6px;
+    background: white;
+    border: 0px solid transparent;
+    margin: 4px;
+    padding: 4px;
+    color:#3a7bd5;
+    width: 99%;
+    outline: 0;
+}
+
+.grbutton:hover{
+    animation-name: buttonfad;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+}
+
+.grbckgrnd{
+    background: linear-gradient(to right, #00d2ff, #3a7bd5);
+    border-radius:6px;
+    width:80%;
+    margin: auto;
+    margin-top: 10px;
+}
+
+.result_images {
+    padding:10px;
+    width:100%;
+    margin:auto;
+    display: flex;
+  flex-wrap: wrap;
+}
+
+.result_image {
+    width: 100%;
+    border-radius: inherit;
+}
+
+.oresult {
+    width: 29%;
+    position: relative;
+    border-radius: 10px;
+    margin: 10px;
+    padding: 0px;
+}
+
+.overlay {
+    position: absolute;
+    background-color: #556270;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    border-radius: inherit;
+    color: white;
+}
+
+.oresult:hover .overlay {
+    animation-name: hovervis;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+}
+
+@keyframes hovervis {
+    from {opacity: 0;}
+    to {opacity: 0.7;}
+  }
+
+  @keyframes buttonfad {
+    from {color: #3a7bd5;background: white;}
+    to {color: white;background: transparent;}
+  }
+
+.matchtext {
+    margin: auto;
+    width: 50%;
+    height:50%;
+    text-align: center;
+    font-weight: bold;
+}
