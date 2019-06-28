@@ -4,8 +4,12 @@ services:
 
 before_install:
   - docker build -t carlad/sinatra .
-  - docker run -d -p 127.0.0.1:5000:80 -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE carlad/sinatra
+  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE carlad/sinatra
   - docker ps -a
+
+install:
+  - sleep 5
+  - docker logs heartbeat
 
 script: curl http://localhost:5000/admin
 
