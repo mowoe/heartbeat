@@ -11,5 +11,5 @@ install:
   - sleep 5
   - docker logs heartbeat
 
-script: curl http://localhost:5000/admin
+script: bash test.sh
 
