@@ -40,6 +40,8 @@ if not testing:
         "user":os.environ.get('DB_USER'),
         "password":os.environ.get('DB_PASSWORD'),
     }
+    with open("./db_auth.json","wb") as f:
+        json.dump(db_auth,f)
 
 if os.environ.get("TESTING") == "1":
     testing = True
