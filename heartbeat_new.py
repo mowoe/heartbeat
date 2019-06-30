@@ -20,6 +20,8 @@ import numpy as np
 import requests
 import argparse
 
+first_run = False
+
 parser = argparse.ArgumentParser(description='Face recognition Software')
 parser.add_argument('--testing', dest='testing', action='store_true',
                     default=False,
@@ -31,6 +33,7 @@ testing = args.testing
 
 if not testing:
     if not os.path.isfile("./db_auth.json"):
+        first_run = True
         if type(os.environ.get('DB_PASSWORD')) == type(None):
             print("No Password supplied!")
             exit()
@@ -80,8 +83,9 @@ class Results(peewee.Model):
 if not testing:
     mysql_db.connect()
     mysql_db.create_tables([Image,Results])
-    Results.truncate_table()
-    Image.truncate_table()
+    if first_run:
+        Results.truncate_table()
+        Image.truncate_table()
     mysql_db.close()
 else:
     mysql_db.create_tables([Image,Results])
