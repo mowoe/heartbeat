@@ -4,7 +4,7 @@ services:
 
 notifications:
   email:
-    - travis@mowoe.com
+    - travis@mowoe.com 
 
 before_install:
   - docker build -t carlad/sinatra .
