@@ -216,7 +216,7 @@ def frontend_matching_images():
     file.save(file.filename)
     print(file.filename)
     X_img = face_recognition.load_image_file(file.filename)
-    X_face_locations = face_recognition.face_locations(X_img,model="cnn")
+    X_face_locations = face_recognition.face_locations(X_img)
     if len(X_face_locations) == 0:
         return []
     print(1)
