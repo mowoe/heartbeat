@@ -215,11 +215,14 @@ def frontend_matching_images():
     file = request.files['file']
     file.save(file.filename)
     print(file.filename)
-    X_img = face_recognition.load_image_file(file.filename)
-    X_face_locations = face_recognition.face_locations(X_img)
+    try:
+        X_img = face_recognition.load_image_file(file.filename)
+        X_face_locations = face_recognition.face_locations(X_img)
+    except TypeError:
+        print("TypeError Catched!")
+        return render_template("error.html",errormessage="Ein Fehler ist aufgetreten, ist eventuell kein Gesicht auf dem Bild oder ist das Bild zu groß?")
     if len(X_face_locations) == 0:
-        return []
-    print(1)
+        return render_template("error.html",errormessage="Wir konnten kein Gesicht auf deinem Bild finden!")
     faces_encodings = face_recognition.face_encodings(X_img, known_face_locations=X_face_locations)
     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=near_images_to_show)
     with open("trained_knn_list.clf",'rb') as f:
