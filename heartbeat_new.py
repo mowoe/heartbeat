@@ -19,6 +19,7 @@ from face_recognition.face_recognition_cli import image_files_in_folder
 import numpy as np
 import requests
 import argparse
+import urllib
 
 first_run = False
 
@@ -69,7 +70,7 @@ class Image(peewee.Model):
     filename = CharField()
     uploaded_date = DateTimeField(default=datetime.datetime.now)
     origin = CharField(default="unknown")
-    other_data = CharField(default="null")
+    other_data = CharField(default="null",max_length=7000)
     class Meta:
         database = mysql_db
 
@@ -108,16 +109,35 @@ def _db_close(exc):
         if not mysql_db.is_closed():
                 mysql_db.close()
 
-@app.route("/api/add_image")
+@app.route("/api/add_image",methods=['POST'])
 def add_image():
-    img_url = request.args.get('img_url')
-    information = request.args.get('img_info')
-    if type(img_url) == type(None) or type(information) == type(None):
-        response = Response(constr_resp("error","No url or Image provided"), status=401, headers={})
-        return response
-    information = json.loads(information)
-    response = Response(constr_resp("success"), status=200, headers={})
-    return response
+    try:
+        img_url = request.form.get('img_url')
+        information = request.form.get('img_info')
+        origin = request.form.get('origin')
+        print(img_url,information,origin)
+        if type(img_url) == type(None) or type(information) == type(None):
+            response = Response(constr_resp("error","No url or Image provided"), status=401, headers={})
+            return 
+        if ".png" in img_url:
+            fend = ".png"
+        elif ".jpg" in img_url:
+            fend = ".jpg"
+        else:
+            return constr_resp("error","no correct fileformat")
+        hash_object = hashlib.sha256(str(time.time()).encode())
+        hex_dig = hash_object.hexdigest()
+        new_filename = str(hex_dig) + "." + fend
+        urllib.request.urlretrieve(img_url,os.path.join(UPLOAD_FOLDER, new_filename))
+        information = json.loads(information)
+        information = json.dumps(information)
+        image = Image(filename=new_filename,origin=origin, other_data=information)
+        image.save()
+        return constr_resp("success")
+    except Exception as e:
+        print(e)
+        return constr_resp("error","unknown error, maybe not all query parameters were specified?")
+
 
 
 @app.route("/api/add_image_via_file",methods=['POST'])
