@@ -253,7 +253,16 @@ def frontend_matching_images():
         score = closest_distances[0][0][x]
         label = all_labels[closest_distances[1][0][x]]
         if score <= distance_threshold:
-            res.append({"id":label,"score":str(score)[:5]})
+            labels = []
+            image = Image.select().where(Image.id==label).get()
+            origin = image.origin
+            labels.append("origin: "+origin)
+            other_data = json.loads(image.other_data)
+            for key in other_data:
+                if len(str(other_data[key])) > 0:
+                    labels.append(key+": "+str(other_data[key]))    
+            res.append({"id":label,"score":str(score)[:5],"labels":labels})
+
     print(res)
     os.remove(file.filename)
     return render_template("result.html",images=res)

@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="static/style.css">
         <link href="https://fonts.googleapis.com/css?family=Monoton|Nunito+Sans|Roboto&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Muli&display=swap" rel="stylesheet"> 
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> 
     </head>
     <body>
         <div class="main-container">
@@ -18,6 +19,10 @@
                     <div class="overlay">
                             <div class="matchtext">
                             {{image.score}}
+                            <br>
+                            {% for label in image.labels %}
+                                <p><span class="w3-tag">{{label}}</span></p>
+                            {% endfor %}
                             </div>
                         </div>                    
                 </div>
