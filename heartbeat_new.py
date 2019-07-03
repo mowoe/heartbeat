@@ -76,8 +76,8 @@ class Image(peewee.Model):
 
 class Results(peewee.Model):
     image_id = CharField()#ForeignKeyField(Image, backref='id')
-    result_type = CharField(max_length=7000)
-    result = CharField()
+    result_type = CharField()
+    result = CharField(max_length=7000)
     class Meta:
         database = mysql_db
 
@@ -293,6 +293,7 @@ def admin_panel():
             n_neighbors = int(round(math.sqrt(len(X))))
 
             knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm="ball_tree", weights='distance')
+            print(X)
             knn_clf.fit(X, y)
 
             with open(model_path, 'wb') as f:
