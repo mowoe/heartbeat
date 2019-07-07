@@ -20,6 +20,7 @@ import numpy as np
 import requests
 import argparse
 import urllib
+import random
 
 first_run = False
 
@@ -164,11 +165,12 @@ def request_work():
     work_type = request.args.get('work_type')
     #print(work_type)
     already_worked = Results.select(Results.image_id).where(Results.result_type==work_type)
-    query = Image.select().where(Image.id.not_in(already_worked)).order_by(fn.Rand()).limit(2)
+    query = Image.select().where(Image.id.not_in(already_worked)).limit(5)
     results = []
     for x in query:
         results.append(x.id)
     print("get work took {} seconds".format(time.time()-start))
+    random.shuffle(results)
     if len(results) > 0:
         return constr_resp(str(results[0]))
     else:
@@ -283,7 +285,6 @@ def admin_panel():
                 results.append([x.image_id,x.id,x.result])
             all_encodings = results
             for encoding in all_encodings:
-                print(encoding)
                 face_bounding_boxes = json.loads(encoding[2])["encoding"]
                 if len(face_bounding_boxes) > 2:
                     X.append(np.array(face_bounding_boxes))
