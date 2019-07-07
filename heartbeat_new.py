@@ -164,7 +164,7 @@ def request_work():
     work_type = request.args.get('work_type')
     #print(work_type)
     already_worked = Results.select(Results.image_id).where(Results.result_type==work_type)
-    query = Image.select().where(Image.id.not_in(already_worked)).order_by(fn.Rand())
+    query = Image.select().where(Image.id.not_in(already_worked)).order_by(fn.Rand()).limit(2)
     results = []
     for x in query:
         results.append(x.id)
