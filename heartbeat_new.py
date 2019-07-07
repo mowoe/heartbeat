@@ -258,9 +258,10 @@ def frontend_matching_images():
             origin = image.origin
             labels.append("origin: "+origin)
             other_data = json.loads(image.other_data)
-            for key in other_data:
-                if len(str(other_data[key])) > 0:
-                    labels.append(key+": "+str(other_data[key]))    
+            if type(other_data) != type(None):
+                for key in other_data:
+                    if len(str(other_data[key])) > 0:
+                        labels.append(key+": "+str(other_data[key]))    
             res.append({"id":label,"score":str(score)[:5],"labels":labels})
 
     print(res)
