@@ -64,7 +64,7 @@ else:
     mysql_db = SqliteDatabase('my_app.db', pragmas={'journal_mode': 'wal'})
 
 model_path = "./examples/trained_knn_model.clf"
-distance_threshold = 0.6
+distance_threshold = 0.5
 near_images_to_show = 5
 
 class Image(peewee.Model):
