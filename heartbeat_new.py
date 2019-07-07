@@ -85,9 +85,6 @@ class Results(peewee.Model):
 if not testing:
     mysql_db.connect()
     mysql_db.create_tables([Image,Results])
-    if first_run:
-        Results.truncate_table()
-        Image.truncate_table()
     mysql_db.close()
 else:
     mysql_db.create_tables([Image,Results])
