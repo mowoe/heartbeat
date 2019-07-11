@@ -5,9 +5,6 @@ import hashlib
 from werkzeug.utils import secure_filename
 import time
 import os
-from peewee import MySQLDatabase, SqliteDatabase
-from peewee import CharField, ForeignKeyField, DateTimeField, fn
-import peewee
 import datetime
 import json
 import math
@@ -21,73 +18,54 @@ import requests
 import argparse
 import urllib
 import random
+import heartbeat_db
 
 first_run = False
 
-parser = argparse.ArgumentParser(description='Face recognition Software')
-parser.add_argument('--testing', dest='testing', action='store_true',
-                    default=False,
-                    help='If testing is true (CI)')
+if not os.path.isfile("./db_conf.json"):
+    db_type = os.environ.get("db_type")
+    with open("./db_conf.json","w") as f:
+        json.dump({"db_type":db_type},f)
+else:
+    with open("./db_conf.json","r") as f:
+        db_type = json.load(f)["db_type"]
 
-args = parser.parse_args()
+if not os.path.isfile("./db_auth.json"):
+    first_run = True
+    if type(os.environ.get('DB_PASSWORD')) == type(None):
+        print("No Password supplied!")
+        exit()
+    db_auth = {
+        "host":os.environ.get('DB_HOST'),
+        "database":os.environ.get('DB_DATABASE'),
+        "user":os.environ.get('DB_USER'),
+        "password":os.environ.get('DB_PASSWORD'),
+        "port":int(os.environ.get("DB_PORT"))
+    }
+    with open("./db_auth.json","w") as f:
+        json.dump(db_auth,f)
 
-testing = args.testing
-
-if not testing:
-    if not os.path.isfile("./db_auth.json"):
-        first_run = True
-        if type(os.environ.get('DB_PASSWORD')) == type(None):
-            print("No Password supplied!")
-            exit()
-        db_auth = {
-            "host":os.environ.get('DB_HOST'),
-            "database":os.environ.get('DB_DATABASE'),
-            "user":os.environ.get('DB_USER'),
-            "password":os.environ.get('DB_PASSWORD'),
-            "port":int(os.environ.get("DB_PORT"))
+mysql_db = heartbeat_db.init_db(db_type)
+heartbeat_db.db_type=db_type
+if db_type == "s3":
+    if not os.path.isfile("./s3_auth.json"):
+        s3_auth = {
+            "aws_access_key_id":os.environ.get("AWS_ACCESS_KEY"),
+            "aws_secret_access_key":os.environ.get("AWS_SECRET_KEY"),
+            "region_name":os.environ.get("AWS_REGION")
         }
-        with open("./db_auth.json","w") as f:
-            json.dump(db_auth,f)
-
-if os.environ.get("TESTING") == "1":
-    testing = True
+        with open("./s3_auth.json") as f:
+            json.dump(s3_auth,f)
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-if not testing:
-    dbconfig = json.load(open("db_auth.json","rb"))
-    mysql_db = peewee.MySQLDatabase(**dbconfig)
-else:
-    mysql_db = SqliteDatabase('my_app.db', pragmas={'journal_mode': 'wal'})
 
 model_path = "./examples/trained_knn_model.clf"
 distance_threshold = 0.5
 near_images_to_show = 5
-
-class Image(peewee.Model):
-    filename = CharField()
-    uploaded_date = DateTimeField(default=datetime.datetime.now)
-    origin = CharField(default="unknown")
-    other_data = CharField(default="null",max_length=7000)
-    class Meta:
-        database = mysql_db
-
-class Results(peewee.Model):
-    image_id = CharField()#ForeignKeyField(Image, backref='id')
-    result_type = CharField()
-    result = CharField(max_length=7000)
-    class Meta:
-        database = mysql_db
-
-if not testing:
-    mysql_db.connect()
-    mysql_db.create_tables([Image,Results])
-    mysql_db.close()
-else:
-    mysql_db.create_tables([Image,Results])
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -98,12 +76,12 @@ def constr_resp(status,reason="healthy"):
 
 @app.before_request
 def _db_connect():
-    if not testing:
+    if db_type=="mysql":
         mysql_db.connect()
 
 @app.teardown_request
 def _db_close(exc):
-    if not testing:
+    if db_type=="mysql":
         if not mysql_db.is_closed():
                 mysql_db.close()
 
@@ -129,45 +107,17 @@ def add_image():
         urllib.request.urlretrieve(img_url,os.path.join(UPLOAD_FOLDER, new_filename))
         information = json.loads(information)
         information = json.dumps(information)
-        image = Image(filename=new_filename,origin=origin, other_data=information)
-        image.save()
+        heartbeat_db.upload_file(new_filename,origin,information)
         return constr_resp("success")
     except Exception as e:
         print(e)
         return constr_resp("error","unknown error, maybe not all query parameters were specified?")
 
-
-
-@app.route("/api/add_image_via_file",methods=['POST'])
-def add_file():
-    if 'file' not in request.files:
-        return constr_resp("error","no file part")
-    file = request.files['file']
-    if file.filename == '':
-        return constr_resp("error","no file supplied")
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        hash_object = hashlib.sha256(str(time.time()).encode())
-        hex_dig = hash_object.hexdigest()
-        new_filename = str(hex_dig) + "." + filename.split(".")[-1]
-        file.save(os.path.join(UPLOAD_FOLDER, new_filename))
-        image = Image(filename=new_filename)
-        image.save()
-        return constr_resp("success")
-    return constr_resp("error","unknown")
-
 @app.route("/api/request_work",methods=['GET'])
 def request_work():
     start = time.time()
     work_type = request.args.get('work_type')
-    #print(work_type)
-    already_worked = Results.select(Results.image_id).where(Results.result_type==work_type)
-    query = Image.select().where(Image.id.not_in(already_worked)).limit(5)
-    results = []
-    for x in query:
-        results.append(x.id)
-    print("get work took {} seconds".format(time.time()-start))
-    random.shuffle(results)
+    results=heartbeat_db.request_work(work_type)
     if len(results) > 0:
         return constr_resp(str(results[0]))
     else:
@@ -179,27 +129,21 @@ def submit_work():
     work_type = request.form.get('work_type')
     img_id = request.form.get('image_id')
     resulted = request.form.get('result')
-    #print(work_type,img_id,resulted)
-    result = Results(image_id=img_id,result=resulted,result_type=work_type)
-    result.save()
+    heartbeat_db.submit_work(work_type,img_id,resulted)
     print("submit work took {} seconds".format(time.time()-start))
     return constr_resp("success")
 
 @app.route("/api/get_all_work")
 def get_all_work():
     work_type = request.args.get('work_type')
-    query = Results.select().where(Results.result_type==work_type)
-    results = []
-    for x in query:
-        results.append([x.image_id,x.id,x.result])
+    results = heartbeat_db.get_all_work(work_type)
     return json.dumps({"result":json.dumps(results)})
 
 @app.route("/api/download_image")
 def download_image():
     imgid = request.args.get('image_id')
-    filename = Image.select().where(Image.id==imgid).get().filename
-    print("filename {}".format(filename))
-    return send_file(os.path.join(app.config['UPLOAD_FOLDER'], filename), mimetype='image/png')
+    resp = heartbeat_db.get_file(image_id)
+    return resp
 
 @app.route("/api/get_matching_images",methods=['POST'])
 def get_matching_images():
@@ -316,8 +260,7 @@ def upload_via_frontend():
         hex_dig = hash_object.hexdigest()
         new_filename = str(hex_dig) + "." + filename.split(".")[-1]
         file.save(os.path.join(UPLOAD_FOLDER, new_filename))
-        image = Image(filename=new_filename)
-        image.save()
+        heartbeat_db.upload_file(new_filename)
         return render_template("success.html")
     return render_template("upload_new.html")
 
