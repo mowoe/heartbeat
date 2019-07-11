@@ -4,7 +4,7 @@ services:
 
 before_install:
   - docker build -t carlad/sinatra .
-  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE -e DB_PORT=$DB_PORT carlad/sinatra 
+  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE -e DB_PORT=$DB_PORT -e db_type=file carlad/sinatra 
   - docker ps -a
 
 install:
