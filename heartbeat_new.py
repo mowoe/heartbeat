@@ -52,7 +52,7 @@ if db_type == "s3":
             "aws_secret_access_key":os.environ.get("AWS_SECRET_KEY"),
             "region_name":os.environ.get("AWS_REGION")
         }
-        with open("./s3_auth.json") as f:
+        with open("./s3_auth.json","w") as f:
             json.dump(s3_auth,f)
 
 mysql_db = heartbeat_db.init_db(db_type)
