@@ -221,10 +221,7 @@ def admin_panel():
             y = []
             counter = 0
             work_type = 'face_encodings'
-            query = Results.select().where(Results.result_type==work_type)
-            results = []
-            for x in query:
-                results.append([x.image_id,x.id,x.result])
+            results = heartbeat_db.get_all_work(work_type)
             all_encodings = results
             for encoding in all_encodings:
                 face_bounding_boxes = json.loads(encoding[2])["encoding"]
