@@ -8,6 +8,8 @@ from flask import send_file
 import json
 import datetime
 import os
+import time
+import random
 
 db_type = ""
 s3_client = ""
@@ -83,7 +85,6 @@ def request_work(work_type):
     results = []
     for x in query:
         results.append(x.id)
-    print("get work took {} seconds".format(time.time()-start))
     random.shuffle(results)
     return results
 
