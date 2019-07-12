@@ -45,8 +45,6 @@ if not os.path.isfile("./db_auth.json"):
     with open("./db_auth.json","w") as f:
         json.dump(db_auth,f)
 
-mysql_db = heartbeat_db.init_db(db_type)
-heartbeat_db.db_type=db_type
 if db_type == "s3":
     if not os.path.isfile("./s3_auth.json"):
         s3_auth = {
@@ -56,6 +54,9 @@ if db_type == "s3":
         }
         with open("./s3_auth.json") as f:
             json.dump(s3_auth,f)
+
+mysql_db = heartbeat_db.init_db(db_type)
+heartbeat_db.db_type=db_type
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
