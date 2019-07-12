@@ -59,7 +59,7 @@ def upload_file(filename,origin="unkown",other_data={"unknown":1}):
         os.remove(filename_path)
 
 def get_file(image_id):
-    filename = Image.select().where(Image.id==imgid).get().filename
+    filename = Image.select().where(Image.id==image_id).get().filename
     if db_type=="s3":
         with open(os.path.join("./",filename), 'wb') as f:
             s3_client.download_fileobj(bucket, filename, f)
