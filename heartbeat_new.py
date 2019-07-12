@@ -143,7 +143,7 @@ def get_all_work():
 @app.route("/api/download_image")
 def download_image():
     imgid = request.args.get('image_id')
-    resp = heartbeat_db.get_file(image_id)
+    resp = heartbeat_db.get_file(imgid)
     return resp
 
 @app.route("/api/get_matching_images",methods=['POST'])
