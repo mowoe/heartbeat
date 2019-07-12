@@ -89,5 +89,5 @@ def request_work(work_type):
     return results
 
 def submit_work(work_type,image_id,result):
-    result = Results(image_id=img_id,result=resulted,result_type=work_type)
+    result = Results(image_id=image_id,result=result,result_type=work_type)
     result.save()
