@@ -198,7 +198,7 @@ def frontend_matching_images():
         label = all_labels[closest_distances[1][0][x]]
         if score <= distance_threshold:
             labels = []
-            image = Image.select().where(Image.id==label).get()
+            image = heartbeat_db.get_imgobj_from_id(label)
             origin = image.origin
             labels.append("origin: "+origin)
             other_data = json.loads(image.other_data)
