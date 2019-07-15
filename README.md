@@ -24,3 +24,38 @@ sudo docker run --name heartbeat \
                 mowoe/heartbeat:latest
 ```
 You can choose if you would like the uploaded pictures to be saved locallly (in the Docker container), or if you want them to be saved in an AWS S3 Bucket (is way cheaper than normal storage on VPS, as you quickly get into the Terabytes of images). To use Local space use the docker variable ```-e db_type=file```. To use the AWS S3 Storage change it to ```-e db_type=s3```. You also need to specify ```-e AWS_ACCESS_KEY=awskey```,```-e AWS_SECRET_KEY=aws_key``` and ```-e AWS_REGION=eu-central-1```(or any other region).
+
+## Usage
+### Upload an Image
+To upload an Image via the API, you have to supply the URL to the image, direct Upload is currently only via the Frontend supported. You also have to supply an origin of the image, so it can later be traced back. If you have any other information about the image, you can supply them via the ```"img_info"``` Key. This is just a JSON Object with all Infos about the Image, which can also be used later for tracing the Image back.
+```http
+POST /api/add_image HTTP/1.1
+Host: heartbeat.mowoe.com
+Content-Type: application/json; charset=utf-8
+
+{
+  "img_url": "https://example.com/example.img",
+  "img_info": "{'uploaded_date':128370}",
+  "origin": "example.com"
+}
+```
+### Request Work
+To request Work form the Server you just have to supply a ```"work_type"``` Key, as Heartbeat theoretically also supports other recognition types than just Face Rec
+```http
+GET /api/request_work?work_type=face_recognition HTTP/1.1
+Host: heartbeat.mowoe.com
+```
+### Submit Work
+To submit the requested Work you have to supply the work and the image_id, that was retrieved when requesting work.
+```http
+POST /api/submit_work HTTP/1.1
+Host: heartbeat.mowoe.com
+Content-Type: application/json; charset=utf-8
+
+{
+  "result": "[representation of the face in a vector]",
+  "image_id": "12345678",
+  "work_type": "face_recognition"
+}
+```
+
