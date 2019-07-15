@@ -91,6 +91,7 @@ def request_work(work_type):
 def submit_work(work_type,image_id,result):
     result = Results(image_id=image_id,result=result,result_type=work_type)
     result.save()
+    query = Image.update(face_rec_worked=True).where(Image.id==image_id)
 
 def get_imgobj_from_id(image_id):
     return Image.select().where(Image.id==image_id).get()
