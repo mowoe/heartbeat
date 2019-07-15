@@ -28,6 +28,7 @@ def init_db(db_type):
         uploaded_date = DateTimeField(default=datetime.datetime.now)
         origin = CharField(default="unknown")
         other_data = CharField(default="null",max_length=7000)
+        face_rec_worked =  BooleanField(default=False)
         class Meta:
             database = mysql_db
 
@@ -80,8 +81,7 @@ def get_all_work(work_type):
     return results
 
 def request_work(work_type):
-    already_worked = Results.select(Results.image_id).where(Results.result_type==work_type)
-    query = Image.select().where(Image.id.not_in(already_worked)).limit(60)
+    query = Image.select().where(Image.face_rec_worked==False).limit(60)
     results = []
     for x in query:
         results.append(x.id)
