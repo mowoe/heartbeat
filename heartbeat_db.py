@@ -81,7 +81,7 @@ def get_all_work(work_type):
 
 def request_work(work_type):
     already_worked = Results.select(Results.image_id).where(Results.result_type==work_type)
-    query = Image.select().where(Image.id.not_in(already_worked)).limit(5)
+    query = Image.select().where(Image.id.not_in(already_worked)).order_by(fn.Random()).limit(5)
     results = []
     for x in query:
         results.append(x.id)
