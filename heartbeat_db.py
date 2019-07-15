@@ -1,7 +1,7 @@
 import peewee
 import requests
 from peewee import MySQLDatabase, SqliteDatabase
-from peewee import CharField, ForeignKeyField, DateTimeField, fn
+from peewee import CharField, ForeignKeyField, DateTimeField, fn, BooleanField
 import peewee
 import boto3
 from flask import send_file
