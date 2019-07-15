@@ -1,4 +1,6 @@
-## Heartbeat
+## Heartbeat &nbsp;[![Build Status](https://travis-ci.com/mowoe/heartbeat.svg?branch=master)](https://travis-ci.com/mowoe/heartbeat)
+
+
 
 Heartbeat is a Face Recognition app, that you can upload Images to find more Images with the same face.
 
