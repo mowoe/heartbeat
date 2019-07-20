@@ -174,6 +174,9 @@ def upload_frontend():
 
 @app.route("/get_matching_images",methods=['POST'])
 def frontend_matching_images():
+    if db_type == "s3":
+        print("downloading image model from bucket...")
+        heartbeat_db.retrieve_model(model_path)
     with open(model_path, 'rb') as f:
         knn_clf = pickle.load(f)
     file = request.files['file']

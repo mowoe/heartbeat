@@ -95,3 +95,9 @@ def submit_work(work_type,image_id,result):
 
 def get_imgobj_from_id(image_id):
     return Image.select().where(Image.id==image_id).get()
+
+def retrieve_model(save_path):
+    if db_type=="s3":
+        with open(os.path.join("./",save_path),"wb") as f:
+            s3_client.download_fileobj(bucket,save_path.split("/")[0],f)
+            
