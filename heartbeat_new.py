@@ -192,7 +192,7 @@ def frontend_matching_images():
         return render_template("error.html",errormessage="Wir konnten kein Gesicht auf deinem Bild finden!")
     faces_encodings = face_recognition.face_encodings(X_img, known_face_locations=X_face_locations)
     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=near_images_to_show)
-    with open("trained_knn_list.clf",'rb') as f:
+    with open("./trained_knn_list.clf",'rb') as f:
         all_labels = pickle.load(f)
     print(closest_distances[1][0])
     res = []

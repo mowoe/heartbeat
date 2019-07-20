@@ -92,7 +92,6 @@ def submit_work(work_type,image_id,result):
     result = Results(image_id=image_id,result=result,result_type=work_type)
     result.save()
     query = Image.update(face_rec_worked=True).where(Image.id==image_id)
-    query.save()
     query.update()
 
 def get_imgobj_from_id(image_id):
@@ -103,3 +102,5 @@ def retrieve_model(save_path):
         with open(os.path.join("./",save_path),"wb") as f:
             print(save_path.split("/")[-1])
             s3_client.download_fileobj(bucket,save_path.split("/")[-1],f)
+        with open(os.path.join("./","trained_knn_list.clf"),"wb") as f:
+            s3_client.download_fileobj(bucket,"trained_knn_list.clf",f)

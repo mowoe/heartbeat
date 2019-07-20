@@ -1,5 +1,5 @@
 .main-container {
-    background-color: white;
+    background-color: #585858;
     margin: auto;
     margin-top: 20px;
     width: 50%;
@@ -31,10 +31,8 @@ button {
 }
 
 body {
-    background: #4ECDC4;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #4ECDC4, #3a7bd5);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #4ECDC4, #3a7bd5); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    
+    background-color: #181818;
+    color: white;
     
   font-family: 'monoMMM', Fallback, sans-serif;
 }
