@@ -100,4 +100,5 @@ def get_imgobj_from_id(image_id):
 def retrieve_model(save_path):
     if db_type=="s3":
         with open(os.path.join("./",save_path),"wb") as f:
-            s3_client.download_fileobj(bucket,save_path.split("/")[0],f)
+            print(save_path.split("/")[-1])
+            s3_client.download_fileobj(bucket,save_path.split("/")[-1],f)
