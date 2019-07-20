@@ -8,6 +8,11 @@
     margin-bottom: 10px;
 }
 
+@font-face {
+    font-family: "monoMMM";
+    src: url('/static/monoMMM_5.ttf')  format('truetype');
+}
+
 button {
     outline: none;
 }
@@ -31,7 +36,7 @@ body {
     background: linear-gradient(to right, #4ECDC4, #3a7bd5); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
     
     
-  font-family: 'Nunito Sans', sans-serif;
+  font-family: 'monoMMM', Fallback, sans-serif;
 }
 
 .grbutton {
@@ -109,6 +114,16 @@ body {
   @keyframes buttonfad {
     from {color: #3a7bd5;background: white;}
     to {color: white;background: transparent;}
+  }
+
+
+  .center {
+    margin: auto;
+    padding: 10px;
+  }
+
+  .text-centre {
+      text-align: center;
   }
 
 .matchtext {
