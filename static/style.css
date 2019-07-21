@@ -1,5 +1,6 @@
 .main-container {
-    background-color: #585858;
+    background-color: white;
+    color: black;
     margin: auto;
     margin-top: 20px;
     width: 50%;
@@ -117,7 +118,6 @@ body {
 
   .center {
     margin: auto;
-    padding: 10px;
   }
 
   .text-centre {
@@ -151,4 +151,30 @@ body {
     cursor: pointer;
     opacity: 0;
     filter: alpha(opacity=0);
+}
+
+.samaritan-text {
+    font-family: 'monoMMM', Fallback, sans-serif;
+    text-decoration: underline;
+}
+
+.triangle-up { width: 0; 
+    height: 0; 
+    border-left: 16.5px solid transparent; 
+    border-right: 16.5px solid transparent; 
+    border-bottom: 25px solid red;
+} 
+
+.cursor {
+    padding-top: 10px;
+    animation-name: cursor-blink;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: infinite;
+}
+
+@keyframes cursor-blink {
+    0% {visibility: 1;}
+    50% {opacity: 0;}
+    100% {opacity: 1;}
 }
