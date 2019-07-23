@@ -47,7 +47,7 @@ def init_db(db_type):
     return mysql_db
 
 
-def upload_file(filename,origin="unkown",other_data={"unknown":1}):
+def upload_file(filename,origin="unknown",other_data={"unknown":1}):
     print(db_type)
     if db_type=="file":
         image = Image(filename=filename,origin=origin, other_data=other_data)

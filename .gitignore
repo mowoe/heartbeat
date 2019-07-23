@@ -79,6 +79,7 @@ examples/
 db_auth.json
 db_conf.json
 s3_auth.json
+aws_auth.json
 *.db
 *.clf
 
