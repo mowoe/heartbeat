@@ -10,17 +10,22 @@ import datetime
 import os
 import time
 import random
+from swiftclient.service import SwiftService, SwiftError
+import swiftclient
 
 db_type = ""
 s3_client = ""
 bucket = "heartbeat-images"
+swift_client = ""
 
 def init_db(db_type):
     global Image
     global Results
     global s3_client
+    global swift_client
     db_type = db_type
     dbconfig = json.load(open("db_auth.json","rb"))
+    print(dbconfig)
     mysql_db = peewee.MySQLDatabase(**dbconfig)
 
     class Image(peewee.Model):
@@ -38,28 +43,51 @@ def init_db(db_type):
         result = CharField(max_length=7000)
         class Meta:
             database = mysql_db        
-
+    mysql_db.connect()
+    mysql_db.create_tables([Image,Results])
+    mysql_db.close()
     if db_type == "s3":
         aws_config = json.load(open("./s3_auth.json","rb"))
         s3_client = boto3.client('s3',**aws_config)
         print("established s3 connection!")
-
+    elif db_type == "openstack":
+        options = {"region_name":"DE1"}
+        openstack_config = json.load(open("./openstack_auth.json","rb"))
+        swift_client = swiftclient.client.Connection(**openstack_config,os_options=options)
+        print("Swift connection established successfully!")
     return mysql_db
 
 
 def upload_file(filename,origin="unknown",other_data={"unknown":1}):
+    image = Image(filename=filename,origin=origin,other_data=other_data)
+    image.save()
     print(db_type)
     if db_type=="file":
-        image = Image(filename=filename,origin=origin, other_data=other_data)
-        image.save()
+        pass
     if db_type=="s3":
         object_name = filename
         filename_path = os.path.join("./uploaded_pics",filename)
         response = s3_client.upload_file(filename_path, bucket, object_name)
-        image = Image(filename=filename,origin=origin,other_data=other_data)
-        image.save()
         print("uploaded to s3!")
         os.remove(filename_path)
+    if db_type == "openstack":
+        with open(os.path.join("./uploaded_pics",filename), 'rb') as local:
+            swift_client.put_object(
+                bucket,
+                filename,
+                contents=local,
+                content_type='image/png'
+            )
+        try:
+            resp_headers = swift_client.head_object(bucket, filename)
+            print('The object was successfully created')
+        except Exception as e:
+            if e.http_status == '404':
+                print('The object was not found')
+            else:
+                print('An error occurred checking for the existence of the object')
+        os.remove(os.path.join("./uploaded_pics",filename))
+
 
 def get_file(image_id):
     filename = Image.select().where(Image.id==image_id).get().filename
@@ -71,6 +99,13 @@ def get_file(image_id):
         return resp
     if db_type=="file":
         resp = send_file(os.path.join("./uploaded_pics", filename), mimetype='image/png')
+        return resp
+    if db_type=="openstack":
+        resp_headers, obj_contents = swift_client.get_object(bucket, filename)
+        with open(os.path.join("./",filename), 'wb') as local:
+            local.write(obj_contents)
+        resp = send_file(os.path.join("./",filename),mimetype="image/png")
+        os.remove(os.path.join("./",filename))
         return resp
 
 def get_all_work(work_type):

@@ -5,20 +5,19 @@ import hashlib
 from werkzeug.utils import secure_filename
 import time
 import os
-import datetime
 import json
 import math
 from sklearn import neighbors
 import os.path
 import pickle
 import face_recognition
-from face_recognition.face_recognition_cli import image_files_in_folder
 import numpy as np
 import requests
 import argparse
 import urllib
-import random
 import heartbeat_db
+import sys  
+
 
 first_run = False
 
@@ -55,6 +54,19 @@ if db_type == "s3":
         }
         with open("./s3_auth.json","w") as f:
             json.dump(s3_auth,f)
+
+if db_type == "openstack":
+    if not os.environ.get("OS_AUTH_URL"):
+        raise ValueError("No Auth URL was supplied!")
+    openstack_auth = {
+        "authurl":os.environ.get("OS_AUTH_URL"),
+        "user":os.environ.get("OS_USERNAME"),
+        "key":os.environ.get("OS_PASSWORD"),
+        "tenant_name":os.environ.get("OS_TENANT_NAME"),
+        "auth_version":'2'
+    }
+    with open("./openstack_auth.json","w") as f:
+        json.dump(openstack_auth,f)
 
 mysql_db = heartbeat_db.init_db(db_type)
 heartbeat_db.db_type=db_type
