@@ -12,6 +12,7 @@ import time
 import random
 from swiftclient.service import SwiftService, SwiftError
 import swiftclient
+from swiftclient.exceptions import ClientException
 
 db_type = ""
 s3_client = ""
@@ -81,7 +82,7 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
         try:
             resp_headers = swift_client.head_object(bucket, filename)
             print('The object was successfully created')
-        except Exception as e:
+        except ClientException as e:
             if e.http_status == '404':
                 print('The object was not found')
             else:
