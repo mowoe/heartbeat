@@ -83,6 +83,7 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
             resp_headers = swift_client.head_object(bucket, filename)
             print('The object was successfully created')
         except ClientException as e:
+            swift_client = swiftclient.client.Connection(**openstack_config,os_options=options)
             if e.http_status == '404':
                 print('The object was not found')
             else:
