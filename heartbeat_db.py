@@ -26,7 +26,6 @@ def init_db(db_type):
     global swift_client
     db_type = db_type
     dbconfig = json.load(open("db_auth.json","rb"))
-    print(dbconfig)
     mysql_db = peewee.MySQLDatabase(**dbconfig)
 
     class Image(peewee.Model):
@@ -43,7 +42,7 @@ def init_db(db_type):
         result_type = CharField()
         result = CharField(max_length=7000)
         class Meta:
-            database = mysql_db        
+            database = mysql_db  
     mysql_db.connect()
     mysql_db.create_tables([Image,Results])
     mysql_db.close()
@@ -92,23 +91,28 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
 
 
 def get_file(image_id):
-    filename = Image.select().where(Image.id==image_id).get().filename
-    if db_type=="s3":
-        with open(os.path.join("./",filename), 'wb') as f:
-            s3_client.download_fileobj(bucket, filename, f)
-        resp = send_file(os.path.join("./", filename), mimetype='image/png')
-        os.remove(os.path.join("./", filename))
-        return resp
-    if db_type=="file":
-        resp = send_file(os.path.join("./uploaded_pics", filename), mimetype='image/png')
-        return resp
-    if db_type=="openstack":
-        resp_headers, obj_contents = swift_client.get_object(bucket, filename)
-        with open(os.path.join("./",filename), 'wb') as local:
-            local.write(obj_contents)
-        resp = send_file(os.path.join("./",filename),mimetype="image/png")
-        os.remove(os.path.join("./",filename))
-        return resp
+    try:
+        filename = Image.select().where(Image.id==image_id).get().filename
+        if db_type=="s3":
+            with open(os.path.join("./",filename), 'wb') as f:
+                s3_client.download_fileobj(bucket, filename, f)
+            resp = send_file(os.path.join("./", filename), mimetype='image/png')
+            os.remove(os.path.join("./", filename))
+            return resp
+        if db_type=="file":
+            resp = send_file(os.path.join("./uploaded_pics", filename), mimetype='image/png')
+            return resp
+        if db_type=="openstack":
+            resp_headers, obj_contents = swift_client.get_object(bucket, filename)
+            with open(os.path.join("./",filename), 'wb') as local:
+                local.write(obj_contents)
+            resp = send_file(os.path.join("./",filename),mimetype="image/png")
+            os.remove(os.path.join("./",filename))
+            return resp
+    except Exception as b:
+        print(b)
+        return None
+
 
 def get_all_work(work_type):
     query = Results.select().where(Results.result_type==work_type)

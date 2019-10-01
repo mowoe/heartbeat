@@ -56,17 +56,18 @@ if db_type == "s3":
             json.dump(s3_auth,f)
 
 if db_type == "openstack":
-    if not os.environ.get("OS_AUTH_URL"):
-        raise ValueError("No Auth URL was supplied!")
-    openstack_auth = {
-        "authurl":os.environ.get("OS_AUTH_URL"),
-        "user":os.environ.get("OS_USERNAME"),
-        "key":os.environ.get("OS_PASSWORD"),
-        "tenant_name":os.environ.get("OS_TENANT_NAME"),
-        "auth_version":'2'
-    }
-    with open("./openstack_auth.json","w") as f:
-        json.dump(openstack_auth,f)
+    if not os.path.isfile("./openstack_auth.json"):
+        if not os.environ.get("OS_AUTH_URL"):
+            raise ValueError("No Auth URL was supplied and/or config file is missing!")
+        openstack_auth = {
+            "authurl":os.environ.get("OS_AUTH_URL"),
+            "user":os.environ.get("OS_USERNAME"),
+            "key":os.environ.get("OS_PASSWORD"),
+            "tenant_name":os.environ.get("OS_TENANT_NAME"),
+            "auth_version":'2'
+        }
+        with open("./openstack_auth.json","w") as f:
+            json.dump(openstack_auth,f)
 
 mysql_db = heartbeat_db.init_db(db_type)
 heartbeat_db.db_type=db_type
@@ -157,6 +158,8 @@ def get_all_work():
 def download_image():
     imgid = request.args.get('image_id')
     resp = heartbeat_db.get_file(imgid)
+    if type(resp) == type(None):
+        resp = render_template("error.html",errormessage="Das Bild scheint nicht mehr vorhanden zu sein. Sorry!")
     return resp
 
 @app.route("/api/get_matching_images",methods=['POST'])
