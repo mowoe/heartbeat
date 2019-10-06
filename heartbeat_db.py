@@ -81,13 +81,14 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
         try:
             resp_headers = swift_client.head_object(bucket, filename)
             print('The object was successfully created')
-        except ClientException as e:
+        except Exception as e:
             swift_client = swiftclient.client.Connection(**openstack_config,os_options=options)
             if e.http_status == '404':
                 print('The object was not found')
             else:
                 print('An error occurred checking for the existence of the object')
-        os.remove(os.path.join("./uploaded_pics",filename))
+        finally:
+            os.remove(os.path.join("./uploaded_pics",filename))
 
 
 def get_file(image_id):
