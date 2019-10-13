@@ -59,15 +59,15 @@ def init_db(db_type):
 
 
 def upload_file(filename,origin="unknown",other_data={"unknown":1}):
+    global swift_client
     image = Image(filename=filename,origin=origin,other_data=other_data)
     image.save()
     print(db_type)
     if db_type=="file":
         pass
     if db_type=="s3":
-        object_name = filename
         filename_path = os.path.join("./uploaded_pics",filename)
-        response = s3_client.upload_file(filename_path, bucket, object_name)
+        response = s3_client.upload_file(filename_path, bucket, filename)
         print("uploaded to s3!")
         os.remove(filename_path)
     if db_type == "openstack":

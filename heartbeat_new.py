@@ -123,6 +123,7 @@ def add_image():
         information = json.loads(information)
         information = json.dumps(information)
         heartbeat_db.upload_file(new_filename,origin,information)
+        os.remove(os.path.join)
         return constr_resp("success")
     except Exception as e:
         print(e)
