@@ -1,4 +1,4 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.7
+FROM mowoe/ngface:latest
 RUN apt update
 RUN apt install -y cmake
 COPY ./requirements.txt /app/requirements.txt
