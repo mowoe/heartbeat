@@ -116,14 +116,12 @@ def add_image():
             fend = ".jpg"
         else:
             return constr_resp("error","no correct fileformat")
-        hash_object = hashlib.sha256(str(time.time()).encode())
-        hex_dig = hash_object.hexdigest()
-        new_filename = str(hex_dig) + fend
+        time_hash = hashlib.sha256(str(time.time()).encode()).hexdigest()
+        new_filename = str(time_hash) + fend
         urllib.request.urlretrieve(img_url,os.path.join(UPLOAD_FOLDER, new_filename))
         information = json.loads(information)
         information = json.dumps(information)
         heartbeat_db.upload_file(new_filename,origin,information)
-        os.remove(os.path.join(UPLOAD_FOLDER, new_filename))
         return constr_resp("success")
     except Exception as e:
         print(e)

@@ -65,18 +65,18 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
     print(db_type)
     if db_type=="file":
         pass
-    if db_type=="s3":
+    elif db_type=="s3":
         filename_path = os.path.join("./uploaded_pics",filename)
         response = s3_client.upload_file(filename_path, bucket, filename)
         print("uploaded to s3!")
         os.remove(filename_path)
-    if db_type == "openstack":
+    elif db_type == "openstack":
         with open(os.path.join("./uploaded_pics",filename), 'rb') as local:
             swift_client.put_object(
                 bucket,
                 filename,
                 contents=local,
-                content_type='image/png'
+                content_type='image/'+filename.spli(".")[-1]
             )
         try:
             resp_headers = swift_client.head_object(bucket, filename)
