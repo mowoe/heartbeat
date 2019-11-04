@@ -123,7 +123,7 @@ def add_image():
         information = json.dumps(information)
         heartbeat_db.upload_file(new_filename,origin,information)
         return constr_resp("success")
-    except Exception as e:
+    except SyntaxError as e:
         print(e)
         return constr_resp("error","unknown error, maybe not all query parameters were specified?")
 

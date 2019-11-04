@@ -83,7 +83,7 @@ def upload_file(filename,origin="unknown",other_data={"unknown":1}):
         try:
             resp_headers = swift_client.head_object(bucket, filename)
             print('The object was successfully created')
-        except Exception as e:
+        except SyntaxError as e:
             print(e,str(e))
         finally:
             swift_client.close()
