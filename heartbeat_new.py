@@ -17,7 +17,7 @@ import argparse
 import urllib
 import heartbeat_db
 import sys  
-
+import peewee
 
 first_run = False
 
