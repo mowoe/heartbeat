@@ -127,6 +127,9 @@ def add_image():
         print("PeeWee Interface broken!")
         mysql_db = heartbeat_db.init_db(db_type)
         print(e)
+        return constr_resp("database error","if this error keeps occuring contact admin")
+    except Exception as e:
+        print(e)
         return constr_resp("error","unknown error, maybe not all query parameters were specified?")
 
 @app.route("/api/request_work",methods=['GET'])
