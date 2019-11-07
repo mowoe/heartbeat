@@ -239,31 +239,37 @@ def frontend_matching_images():
 def admin_panel():
     action = request.args.get('action')
     if type(action) != type(None):
-        if action == "update_knn":
-            X = []
-            y = []
-            counter = 0
-            work_type = 'face_encodings'
-            results = heartbeat_db.get_all_work(work_type)
-            all_encodings = results
-            for encoding in all_encodings:
-                face_bounding_boxes = json.loads(encoding[2])["encoding"]
-                if len(face_bounding_boxes) > 2:
-                    X.append(np.array(face_bounding_boxes))
-                    y.append(encoding[0])
-                    counter+=1
-            print("found {} encodings".format(counter))
+        try:
+            if action == "update_knn":
+                X = []
+                y = []
+                counter = 0
+                work_type = 'face_encodings'
+                results = heartbeat_db.get_all_work(work_type)
+                all_encodings = results
+                for encoding in all_encodings:
+                    face_bounding_boxes = json.loads(encoding[2])["encoding"]
+                    if len(face_bounding_boxes) > 2:
+                        X.append(np.array(face_bounding_boxes))
+                        y.append(encoding[0])
+                        counter+=1
+                print("found {} encodings".format(counter))
 
-            n_neighbors = int(round(math.sqrt(len(X))))
+                n_neighbors = int(round(math.sqrt(len(X))))
 
-            knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm="ball_tree", weights='distance')
-            knn_clf.fit(X, y)
+                knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors, algorithm="ball_tree", weights='distance')
+                knn_clf.fit(X, y)
 
-            with open(model_path, 'wb') as f:
-                pickle.dump(knn_clf, f)
-            with open("trained_knn_list.clf",'wb') as f:
-                pickle.dump(y,f)
-        return redirect("/admin")
+                with open(model_path, 'wb') as f:
+                    pickle.dump(knn_clf, f)
+                with open("trained_knn_list.clf",'wb') as f:
+                    pickle.dump(y,f)
+        except peewee.InterfaceError:
+            print("Peewee interface broken! restoring...")
+            mysql_db = heartbeat_db.init_db(db_type)
+            print(e)
+        finally:
+            return redirect("/admin")
     else:
         return render_template("admin.html")
 
