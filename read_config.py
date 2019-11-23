@@ -16,7 +16,7 @@ class HeartbeatConfig(object):
             self.config = json.load(open("./heartbeat_conf.json","r"))
         else:
             log_msg("heartbeat_conf.json not found, reading from env...")
-            self.config = get_from_env()
+            self.config = self.get_from_env()
             log_msg("Read Successful! Dumping to json...")
             with open("./heartbeat_conf.json","w") as f:
                 json.dump(self.config,f)
