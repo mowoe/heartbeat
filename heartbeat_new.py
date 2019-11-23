@@ -15,62 +15,24 @@ import numpy as np
 import requests
 import argparse
 import urllib
-import heartbeat_db
+from heartbeat_db import HeartbeatDB
 import sys  
 import peewee
+import read_config
 
-first_run = False
+heartbeat_config = read_config.HeartbeatConfig()
+heartbeat_config.setup()
 
-if not os.path.isfile("./db_conf.json"):
-    db_type = os.environ.get("db_type")
-    with open("./db_conf.json","w") as f:
-        json.dump({"db_type":db_type},f)
-else:
-    with open("./db_conf.json","r") as f:
-        db_type = json.load(f)["db_type"]
 
-if not os.path.isfile("./db_auth.json"):
-    first_run = True
-    if type(os.environ.get('DB_PASSWORD')) == type(None):
-        print("No Password supplied!")
-        exit()
-    db_auth = {
-        "host":os.environ.get('DB_HOST'),
-        "database":os.environ.get('DB_DATABASE'),
-        "user":os.environ.get('DB_USER'),
-        "password":os.environ.get('DB_PASSWORD'),
-        "port":int(os.environ.get("DB_PORT"))
-    }
-    with open("./db_auth.json","w") as f:
-        json.dump(db_auth,f)
+heartbeat_db = HeartbeatDB()
 
-if db_type == "s3":
-    if not os.path.isfile("./s3_auth.json"):
-        s3_auth = {
-            "aws_access_key_id":os.environ.get("AWS_ACCESS_KEY"),
-            "aws_secret_access_key":os.environ.get("AWS_SECRET_KEY"),
-            "region_name":os.environ.get("AWS_REGION"),
-            "endpoint_url":os.environ.get("ENDPOINT_URL")
-        }
-        with open("./s3_auth.json","w") as f:
-            json.dump(s3_auth,f)
+mysql_db = heartbeat_db.init_db(
+    heartbeat_config.config["db_type"],
+    heartbeat_config.config["db_auth"],
+    heartbeat_config.config["object_storage_type"],
+    heartbeat_config.config["object_storage_auth"]
+)
 
-if db_type == "openstack":
-    if not os.path.isfile("./openstack_auth.json"):
-        if not os.environ.get("OS_AUTH_URL"):
-            raise ValueError("No Auth URL was supplied and/or config file is missing!")
-        openstack_auth = {
-            "authurl":os.environ.get("OS_AUTH_URL"),
-            "user":os.environ.get("OS_USERNAME"),
-            "key":os.environ.get("OS_PASSWORD"),
-            "tenant_name":os.environ.get("OS_TENANT_NAME"),
-            "auth_version":'2'
-        }
-        with open("./openstack_auth.json","w") as f:
-            json.dump(openstack_auth,f)
-
-mysql_db = heartbeat_db.init_db(db_type)
-heartbeat_db.db_type=db_type
 
 UPLOAD_FOLDER = './uploaded_pics/'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -91,12 +53,12 @@ def constr_resp(status,reason="healthy"):
 
 @app.before_request
 def _db_connect():
-    if db_type=="mysql":
+    if heartbeat_config.config["db_type"]=="mysql":
         mysql_db.connect()
 
 @app.teardown_request
 def _db_close(exc):
-    if db_type=="mysql":
+    if heartbeat_config.config["db_type"]=="mysql":
         if not mysql_db.is_closed():
                 mysql_db.close()
 
@@ -207,7 +169,7 @@ def frontend_matching_images():
         X_face_locations = face_recognition.face_locations(X_img)
     except TypeError:
         print("TypeError Catched!")
-        return render_template("error.html",errormessage="Ein Fehler ist aufgetreten, ist eventuell kein Gesicht auf dem Bild oder ist das Bild zu groß?")
+        return render_template("error.html",errormessage="Ein Fehler ist aufgetreten, ist eventuell kein Gesicht auf dem Bild oder ist das Bild zu gross?")
     if len(X_face_locations) == 0:
         return render_template("error.html",errormessage="Wir konnten kein Gesicht auf deinem Bild finden!")
     faces_encodings = face_recognition.face_encodings(X_img, known_face_locations=X_face_locations)
