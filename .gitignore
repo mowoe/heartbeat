@@ -82,6 +82,7 @@ s3_auth.json
 aws_auth.json
 *.db
 *.clf
+uploaded_pics/
 
 #vscode
 .vscode/
