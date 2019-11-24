@@ -55,7 +55,7 @@ class HeartbeatConfig(object):
         config = {
             "object_storage_type":object_storage_type,
             "object_storage_auth":object_storage_auth,
-            "db_type":database_type,
+            "db_type":db_type,
             "db_auth":database_auth
         }
         return config
