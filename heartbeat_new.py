@@ -87,7 +87,12 @@ def add_image():
         return constr_resp("success")
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
-        mysql_db = heartbeat_db.init_db(db_type)
+        mysql_db = heartbeat_db.init_db(
+            heartbeat_config.config["db_type"],
+            heartbeat_config.config["db_auth"],
+            heartbeat_config.config["object_storage_type"],
+            heartbeat_config.config["object_storage_auth"]
+        )
         print(e)
         return constr_resp("database error","if this error keeps occuring contact admin")
     except Exception as e:

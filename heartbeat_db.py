@@ -43,6 +43,7 @@ class HeartbeatDB(object):
         pass
 
     def init_db(self,db_type, dbconfig, object_storage_type, object_storage_auth):
+        print(dbconfig)
         mysql_db = peewee.MySQLDatabase(**dbconfig)
         self.Image, self.Results = setup_classes(mysql_db)
         self.db_type = db_type

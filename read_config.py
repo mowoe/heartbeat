@@ -58,6 +58,5 @@ class HeartbeatConfig(object):
             "db_type":db_type,
             "db_auth":db_auth
         }
-        print(config)
         return config
 
