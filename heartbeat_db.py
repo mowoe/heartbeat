@@ -118,7 +118,7 @@ class HeartbeatDB(object):
 
 
     def get_all_work(self,work_type):
-        query = Results.select().where(Results.result_type==work_type)
+        query = self.Results.select().where(self.Results.result_type==work_type)
         results = []
         for x in query:
             results.append([x.image_id,x.id,x.result])
@@ -133,7 +133,7 @@ class HeartbeatDB(object):
         return results
 
     def submit_work(self,work_type,image_id,result):
-        result = Results(image_id=image_id,result=result,result_type=work_type)
+        result = self.Results(image_id=image_id,result=result,result_type=work_type)
         result.save()
         query = self.Image.update(face_rec_worked=True).where(self.Image.id==image_id)
         query.execute()
