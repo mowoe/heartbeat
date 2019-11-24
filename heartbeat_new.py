@@ -68,10 +68,8 @@ def add_image():
         img_url = request.form.get('img_url')
         information = request.form.get('img_info')
         origin = request.form.get('origin')
-        print(img_url,information,origin)
         if type(img_url) == type(None) or type(information) == type(None):
-            response = Response(constr_resp("error","No url or Image provided"), status=401, headers={})
-            return 
+            return constr_resp("error","No url or Image provided")
         if ".png" in img_url:
             fend = ".png"
         elif ".jpg" in img_url:
@@ -101,7 +99,6 @@ def add_image():
 
 @app.route("/api/request_work",methods=['GET'])
 def request_work():
-    start = time.time()
     work_type = request.args.get('work_type')
     results=heartbeat_db.request_work(work_type)
     if len(results) > 0:
@@ -161,7 +158,7 @@ def upload_frontend():
 
 @app.route("/get_matching_images",methods=['POST'])
 def frontend_matching_images():
-    if db_type == "s3":
+    if heartbeat_config.config["db_type"] == "s3":
         print("downloading image model from bucket...")
         heartbeat_db.retrieve_model(model_path)
     with open(model_path, 'rb') as f:
@@ -231,9 +228,14 @@ def admin_panel():
                     pickle.dump(knn_clf, f)
                 with open("trained_knn_list.clf",'wb') as f:
                     pickle.dump(y,f)
-        except peewee.InterfaceError:
-            print("Peewee interface broken! restoring...")
-            mysql_db = heartbeat_db.init_db(db_type)
+        except peewee.InterfaceError as e:
+            print("PeeWee Interface broken!")
+            mysql_db = heartbeat_db.init_db(
+                heartbeat_config.config["db_type"],
+                heartbeat_config.config["db_auth"],
+                heartbeat_config.config["object_storage_type"],
+                heartbeat_config.config["object_storage_auth"]
+            )
             print(e)
         finally:
             return redirect("/admin")

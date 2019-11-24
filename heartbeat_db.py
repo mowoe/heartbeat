@@ -14,7 +14,6 @@ from swiftclient.service import SwiftService, SwiftError
 import swiftclient
 from swiftclient.exceptions import ClientException
 
-s3_client = ""
 bucket = "heartbeat-images"
 object_storage_auth = ""
 options = {"region_name":"DE1"}
@@ -43,7 +42,6 @@ class HeartbeatDB(object):
         pass
 
     def init_db(self,db_type, dbconfig, object_storage_type, object_storage_auth):
-        print(dbconfig)
         mysql_db = peewee.MySQLDatabase(**dbconfig)
         self.Image, self.Results = setup_classes(mysql_db)
         self.db_type = db_type
@@ -54,7 +52,7 @@ class HeartbeatDB(object):
         mysql_db.close()
 
         if object_storage_type == "s3":
-            s3_client = boto3.client('s3',**object_storage_auth)
+            self.s3_client = boto3.client('s3',**object_storage_auth)
             print("established s3 connection!")
         elif object_storage_type == "openstack":
             pass
@@ -67,7 +65,7 @@ class HeartbeatDB(object):
             pass
         elif self.object_storage_type =="s3":
             filename_path = os.path.join("./uploaded_pics",filename)
-            response = s3_client.upload_file(filename_path, bucket, filename)
+            response = self.s3_client.upload_file(filename_path, bucket, filename)
             print("uploaded to s3!")
             os.remove(filename_path)
         elif self.object_storage_type == "openstack":
@@ -82,7 +80,7 @@ class HeartbeatDB(object):
                 )
             try:
                 print(filename)
-                resp_headers = swift_client.head_object(bucket, filename)
+                assert type(swift_client.head_object(bucket, filename)) !=  type(None)
                 print('The object was successfully created')
             except SyntaxError as e:
                 print(e,str(e))
@@ -96,7 +94,7 @@ class HeartbeatDB(object):
             filename = self.Image.select().where(self.Image.id==image_id).get().filename
             if self.object_storage_type=="s3":
                 with open(os.path.join("./",filename), 'wb') as f:
-                    s3_client.download_fileobj(bucket, filename, f)
+                    self.s3_client.download_fileobj(bucket, filename, f)
                 resp = send_file(os.path.join("./", filename), mimetype='image/png')
                 os.remove(os.path.join("./", filename))
                 return resp
@@ -104,7 +102,7 @@ class HeartbeatDB(object):
                 resp = send_file(os.path.join("./uploaded_pics", filename), mimetype='image/png')
                 return resp
             if self.object_storage_type=="openstack":
-                swift_client = swiftclient.client.Connection(os_options=options,**object_storage_auth)
+                swift_client = swiftclient.client.Connection(os_options=options,**self.object_storage_auth)
                 resp_headers, obj_contents = swift_client.get_object(bucket, filename)
                 with open(os.path.join("./",filename), 'wb') as local:
                     local.write(obj_contents)
@@ -145,6 +143,6 @@ class HeartbeatDB(object):
         if self.object_storage_type=="s3":
             with open(os.path.join("./",save_path),"wb") as f:
                 print(save_path.split("/")[-1])
-                s3_client.download_fileobj(bucket,save_path.split("/")[-1],f)
+                self.s3_client.download_fileobj(bucket,save_path.split("/")[-1],f)
             with open(os.path.join("./","trained_knn_list.clf"),"wb") as f:
-                s3_client.download_fileobj(bucket,"trained_knn_list.clf",f)
+                self.s3_client.download_fileobj(bucket,"trained_knn_list.clf",f)
