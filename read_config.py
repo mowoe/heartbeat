@@ -56,7 +56,7 @@ class HeartbeatConfig(object):
             "object_storage_type":object_storage_type,
             "object_storage_auth":object_storage_auth,
             "db_type":db_type,
-            "db_auth":database_auth
+            "db_auth":db_auth
         }
         return config
 
