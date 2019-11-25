@@ -40,7 +40,7 @@ ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-model_path = "./examples/trained_knn_model.clf"
+model_path = "./trained_knn_model.clf"
 distance_threshold = 0.5
 near_images_to_show = 5
 
