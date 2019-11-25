@@ -41,6 +41,61 @@ def setup_classes(mysql_db):
     return Image, Results
 
 
+class StoredImage(object):
+    def __init__(self, filename, object_storage_type, object_storage_auth):
+        self.filename = filename
+        self.object_storage_type = object_storage_type
+        self.object_storage_auth = object_storage_auth
+        self.just_name = self.filename.split("/")[-1]
+
+    def safe_file(self):
+        if self.object_storage_type == "openstack":
+            swift_client = swiftclient.client.Connection(
+                os_options=options, **self.object_storage_auth
+            )
+            with open(self.filename, "rb") as local:
+                swift_client.put_object(
+                    bucket,
+                    self.just_name,
+                    contents=local,
+                    content_type="image/" + self.filename.split(".")[-1],
+                )
+            try:
+                assert type(swift_client.head_object(bucket, self.just_name)) != type(
+                    None
+                )
+            except AssertionError as e:
+                print(e, str(e))
+            finally:
+                swift_client.close()
+
+        elif self.object_storage_type == "s3":
+            assert type(
+                self.s3_client.upload_file(self.filename, bucket, self.just_name)
+            ) != type(None)
+            print("uploaded to s3!")
+
+    def load_file(self):
+        if self.object_storage_type == "openstack":
+            swift_client = swiftclient.client.Connection(
+                os_options=options, **self.object_storage_auth
+            )
+            resp_headers, obj_contents = swift_client.get_object(bucket, self.filename)
+            with open(os.path.join("./", self.filename), "wb") as local:
+                local.write(obj_contents)
+            swift_client.close()
+
+        elif self.object_storage_type == "s3":
+            with open(os.path.join("./", self.filename), "wb") as f:
+                self.s3_client.download_fileobj(bucket, self.filename, f)
+            resp = send_file(os.path.join("./", self.filename), mimetype="image/png")
+            os.remove(os.path.join("./", self.filename))
+            return resp
+
+    def delete_locally(self):
+        os.remove(self.filename)
+
+
 class HeartbeatDB(object):
     def __init__(self):
         pass
@@ -65,66 +120,22 @@ class HeartbeatDB(object):
     def upload_file(self, filename, origin="unknown", other_data={"unknown": 1}):
         image = self.Image(filename=filename, origin=origin, other_data=other_data)
         image.save()
-        if self.object_storage_type == "file":
-            pass
-        elif self.object_storage_type == "s3":
-            filename_path = os.path.join("./uploaded_pics", filename)
-            response = self.s3_client.upload_file(filename_path, bucket, filename)
-            print("uploaded to s3!")
-            os.remove(filename_path)
-        elif self.object_storage_type == "openstack":
-            swift_client = swiftclient.client.Connection(
-                os_options=options, **self.object_storage_auth
-            )
-            print("Swift connection established!")
-            with open(os.path.join("./uploaded_pics", filename), "rb") as local:
-                swift_client.put_object(
-                    bucket,
-                    filename,
-                    contents=local,
-                    content_type="image/" + filename.split(".")[-1],
-                )
-            try:
-                print(filename)
-                assert type(swift_client.head_object(bucket, filename)) != type(None)
-                print("The object was successfully created")
-            except SyntaxError as e:
-                print(e, str(e))
-            finally:
-                swift_client.close()
-                print("Swift client closed!")
-                os.remove(os.path.join("./uploaded_pics", filename))
+        path = os.path.join("./uploaded_pics", filename)
+        stored_image = StoredImage(
+            path, self.object_storage_type, self.object_storage_auth
+        )
+        stored_image.safe_file()
+        stored_image.delete_locally()
 
     def get_file(self, image_id):
-        try:
-            filename = (
-                self.Image.select().where(self.Image.id == image_id).get().filename
-            )
-            if self.object_storage_type == "s3":
-                with open(os.path.join("./", filename), "wb") as f:
-                    self.s3_client.download_fileobj(bucket, filename, f)
-                resp = send_file(os.path.join("./", filename), mimetype="image/png")
-                os.remove(os.path.join("./", filename))
-                return resp
-            if self.object_storage_type == "file":
-                resp = send_file(
-                    os.path.join("./uploaded_pics", filename), mimetype="image/png"
-                )
-                return resp
-            if self.object_storage_type == "openstack":
-                swift_client = swiftclient.client.Connection(
-                    os_options=options, **self.object_storage_auth
-                )
-                resp_headers, obj_contents = swift_client.get_object(bucket, filename)
-                with open(os.path.join("./", filename), "wb") as local:
-                    local.write(obj_contents)
-                resp = send_file(os.path.join("./", filename), mimetype="image/png")
-                os.remove(os.path.join("./", filename))
-                swift_client.close()
-                return resp
-        except Exception as b:
-            print(b)
-            return None
+        filename = self.Image.select().where(self.Image.id == image_id).get().filename
+        stored_image = StoredImage(
+            filename, self.object_storage_type, self.object_storage_auth
+        )
+        stored_image.load_file()
+        resp = send_file(os.path.join("./", filename), mimetype="image/png")
+        stored_image.delete_locally()
+        return resp
 
     def get_all_work(self, work_type):
         query = self.Results.select().where(self.Results.result_type == work_type)
