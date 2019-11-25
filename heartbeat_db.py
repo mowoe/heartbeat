@@ -159,14 +159,21 @@ class HeartbeatDB(object):
         return self.Image.select().where(self.Image.id == image_id).get()
 
     def retrieve_model(self):
-        remotelist = StoredImage("trained_knn_list.clf",self.object_storage_type,self.object_storage_auth)
+        remotelist = StoredImage(
+            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
+        )
         remotelist.load_file()
-        remotefile = StoredImage("trained_knn_model.clf",self.object_storage_type,self.object_storage_auth)
+        remotefile = StoredImage(
+            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
+        )
         remotefile.load_file()
-    
-    def safe_model(self):
-        remotelist = StoredImage("trained_knn_list.clf",self.object_storage_type,self.object_storage_auth)
-        remotelist.safe_file()
-        remotefile = StoredImage("trained_knn_model.clf",self.object_storage_type,self.object_storage_auth)
-        remotefile.safe_file()
 
+    def safe_model(self):
+        remotelist = StoredImage(
+            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
+        )
+        remotelist.safe_file()
+        remotefile = StoredImage(
+            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
+        )
+        remotefile.safe_file()
