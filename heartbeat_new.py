@@ -207,9 +207,7 @@ def upload_frontend():
 
 @app.route("/get_matching_images", methods=["POST"])
 def frontend_matching_images():
-    if heartbeat_config.config["db_type"] == "s3":
-        print("downloading image model from bucket...")
-        heartbeat_db.retrieve_model(model_path)
+    heartbeat_db.retrieve_model()
     with open(model_path, "rb") as f:
         knn_clf = pickle.load(f)
     file = request.files["file"]
@@ -290,6 +288,7 @@ def admin_panel():
                     pickle.dump(knn_clf, f)
                 with open("trained_knn_list.clf", "wb") as f:
                     pickle.dump(y, f)
+                heartbeat_db.safe_model()
         except peewee.InterfaceError as e:
             print("PeeWee Interface broken!")
             mysql_db = heartbeat_db.init_db(

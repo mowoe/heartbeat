@@ -47,6 +47,9 @@ class StoredImage(object):
         self.object_storage_type = object_storage_type
         self.object_storage_auth = object_storage_auth
         self.just_name = self.filename.split("/")[-1]
+        if self.object_storage_type == "s3":
+            self.s3_client = boto3.client("s3", **object_storage_auth)
+            print("established s3 connection!")
 
     def safe_file(self):
         if self.object_storage_type == "openstack":
@@ -109,12 +112,6 @@ class HeartbeatDB(object):
         mysql_db.connect()
         mysql_db.create_tables([self.Image, self.Results])
         mysql_db.close()
-
-        if object_storage_type == "s3":
-            self.s3_client = boto3.client("s3", **object_storage_auth)
-            print("established s3 connection!")
-        elif object_storage_type == "openstack":
-            pass
         return mysql_db
 
     def upload_file(self, filename, origin="unknown", other_data={"unknown": 1}):
@@ -161,10 +158,15 @@ class HeartbeatDB(object):
     def get_imgobj_from_id(self, image_id):
         return self.Image.select().where(self.Image.id == image_id).get()
 
-    def retrieve_model(self, save_path):
-        if self.object_storage_type == "s3":
-            with open(os.path.join("./", save_path), "wb") as f:
-                print(save_path.split("/")[-1])
-                self.s3_client.download_fileobj(bucket, save_path.split("/")[-1], f)
-            with open(os.path.join("./", "trained_knn_list.clf"), "wb") as f:
-                self.s3_client.download_fileobj(bucket, "trained_knn_list.clf", f)
+    def retrieve_model(self):
+        remotelist = StoredImage("trained_knn_list.clf",self.object_storage_type,self.object_storage_auth)
+        remotelist.load_file()
+        remotefile = StoredImage("trained_knn_model.clf",self.object_storage_type,self.object_storage_auth)
+        remotefile.load_file()
+    
+    def safe_model(self):
+        remotelist = StoredImage("trained_knn_list.clf",self.object_storage_type,self.object_storage_auth)
+        remotelist.safe_file()
+        remotefile = StoredImage("trained_knn_model.clf",self.object_storage_type,self.object_storage_auth)
+        remotefile.safe_file()
+
