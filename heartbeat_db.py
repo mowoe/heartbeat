@@ -13,6 +13,7 @@ import random
 from swiftclient.service import SwiftService, SwiftError
 import swiftclient
 from swiftclient.exceptions import ClientException
+import hashlib
 
 bucket = "heartbeat-images"
 object_storage_auth = ""
@@ -130,7 +131,7 @@ class HeartbeatDB(object):
         for result in self.Image.select().where(Image.file_hash==file_hash).execute():
             print("Duplicate!")
             return #An Image with the same hash is already in the database.
-        image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash)
+        image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
         image.save()
         stored_image = StoredImage(
             path, self.object_storage_type, self.object_storage_auth
