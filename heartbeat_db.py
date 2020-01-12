@@ -18,6 +18,7 @@ import hashlib
 bucket = "heartbeat-images"
 object_storage_auth = ""
 options = {"region_name": "DE1"}
+BUF_SIZE = 1024
 
 def hash_file(filename):
     sha1 = hashlib.sha1()
@@ -128,7 +129,7 @@ class HeartbeatDB(object):
     def upload_file(self, filename, origin="unknown", other_data={"unknown": 1}):
         path = os.path.join("./uploaded_pics", filename)
         file_hash = hash_file(path)
-        for result in self.Image.select().where(Image.file_hash==file_hash).execute():
+        for result in self.Image.select().where(self.Image.file_hash==file_hash).execute():
             print("Duplicate!")
             return #An Image with the same hash is already in the database.
         image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
