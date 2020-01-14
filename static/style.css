@@ -1,9 +1,10 @@
 .main-container {
-    background-color: white;
+    background-color: #F2F2F2;
+    box-shadow: 4px 4px 10px #BABABA;
     color: black;
     margin: auto;
     margin-top: 20px;
-    width: 50%;
+    width: 750px;
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 10px;
@@ -12,6 +13,11 @@
 @font-face {
     font-family: "monoMMM";
     src: url('/static/monoMMM_5.ttf')  format('truetype');
+}
+
+@font-face {
+    font-family: "AnonymousPro";
+    src: url('/static/Anonymous\ Pro.ttf')  format('truetype');
 }
 
 button {
@@ -32,9 +38,9 @@ button {
 }
 
 body {
-    background-color: #181818;
+    background-color: white;
     color: white;
-    
+    line-height: 28px;
   font-family: 'monoMMM', Fallback, sans-serif;
 }
 
@@ -42,12 +48,15 @@ body {
     border-radius: 6px;
     background: white;
     border: 0px solid transparent;
-    color:#3a7bd5;
+    color:rgba(186,31,38,1);
     width: 99%;
     display: table;
+    text-align: center;
     margin: auto;
     margin-top: 3px;
     margin-bottom: 3px;
+    text-decoration: none;
+    font-family: 'monoMMM';
 }
 
 .grbutton:hover{
@@ -57,7 +66,7 @@ body {
 }
 
 .grbckgrnd{
-    background: linear-gradient(to right, #00d2ff, #3a7bd5);
+    background: linear-gradient(90deg, rgba(59,10,10,1) 0%, rgba(186,31,38,1) 24%, rgba(244,125,130,1) 100%);
     border-radius:6px;
     width:80%;
     margin: auto;
@@ -111,7 +120,7 @@ body {
   }
 
   @keyframes buttonfad {
-    from {color: #3a7bd5;background: white;}
+    from {color: rgba(186,31,38,1);background: white;}
     to {color: white;background: transparent;}
   }
 
@@ -120,16 +129,17 @@ body {
     margin: auto;
   }
 
-  .text-centre {
-      text-align: center;
+.text-center {
+    text-align: center;
+    font-family: 'monoMMM';
   }
 
 .matchtext {
     margin: auto;
-    width: 50%;
-    height:50%;
+    width: 90%;
     text-align: center;
-    font-weight: bold;
+    font-size: small;
+    line-height: 18px;
 }
 
 @media only screen and (max-width: 1100px) {
@@ -137,6 +147,7 @@ body {
 }
 
 .fileUpload {
+    color: white;
     position: relative;
     overflow: hidden;
     margin: 10px;
@@ -154,8 +165,7 @@ body {
 }
 
 .samaritan-text {
-    font-family: 'monoMMM', Fallback, sans-serif;
-    text-decoration: underline;
+    text-transform: uppercase;
 }
 
 .triangle-up { width: 0; 
@@ -179,7 +189,25 @@ body {
     100% {opacity: 1;}
 }
 
-h1 {
-    font-family: 'monoMMM', Fallback, sans-serif;
-    text-decoration: underline;
+.infotext {
+    font-family: 'Roboto', sans-serif;
+    margin: 10px;
 }
+
+.startbutton {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 4px 4px 5px #BABABA; 
+    margin-top: 20px;
+}
+@keyframes movedown {
+    0% {margin-top: 0px;}
+    100% {margin-top: 15px;}
+}
+
+.mvdwn:hover {
+    animation: movedown 1s;
+}
+
