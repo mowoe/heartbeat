@@ -13,11 +13,22 @@ import random
 from swiftclient.service import SwiftService, SwiftError
 import swiftclient
 from swiftclient.exceptions import ClientException
+import hashlib
 
 bucket = "heartbeat-images"
 object_storage_auth = ""
 options = {"region_name": "DE1"}
+BUF_SIZE = 1024
 
+def hash_file(filename):
+    sha1 = hashlib.sha1()
+    with open(filename, 'rb') as f:
+        while True:
+            data = f.read(BUF_SIZE)
+            if not data:
+                break
+            sha1.update(data)
+    return sha1.hexdigest()
 
 def setup_classes(mysql_db):
     class Image(peewee.Model):
@@ -26,6 +37,7 @@ def setup_classes(mysql_db):
         origin = CharField(default="unknown")
         other_data = CharField(default="null", max_length=7000)
         face_rec_worked = BooleanField(default=False)
+        file_hash = CharField(default=None)
 
         class Meta:
             database = mysql_db
@@ -115,9 +127,13 @@ class HeartbeatDB(object):
         return mysql_db
 
     def upload_file(self, filename, origin="unknown", other_data={"unknown": 1}):
-        image = self.Image(filename=filename, origin=origin, other_data=other_data)
-        image.save()
         path = os.path.join("./uploaded_pics", filename)
+        file_hash = hash_file(path)
+        for result in self.Image.select().where(self.Image.file_hash==file_hash).execute():
+            print("Duplicate!")
+            return #An Image with the same hash is already in the database.
+        image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
+        image.save()
         stored_image = StoredImage(
             path, self.object_storage_type, self.object_storage_auth
         )
