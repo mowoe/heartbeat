@@ -15,7 +15,6 @@ import swiftclient
 from swiftclient.exceptions import ClientException
 import hashlib
 
-bucket = "naziwatch-images"
 object_storage_auth = ""
 options = {"region_name": "DE1"}
 BUF_SIZE = 1024
@@ -54,8 +53,9 @@ def setup_classes(mysql_db):
 
 
 class StoredImage(object):
-    def __init__(self, filename, object_storage_type, object_storage_auth):
+    def __init__(self, filename, object_storage_type, object_storage_auth, bucket):
         self.filename = filename
+        self.bucket = bucket
         self.object_storage_type = object_storage_type
         self.object_storage_auth = object_storage_auth
         self.just_name = self.filename.split("/")[-1]
@@ -70,13 +70,13 @@ class StoredImage(object):
             )
             with open(self.filename, "rb") as local:
                 swift_client.put_object(
-                    bucket,
+                    self.bucket,
                     self.just_name,
                     contents=local,
                     content_type="image/" + self.filename.split(".")[-1],
                 )
             try:
-                assert type(swift_client.head_object(bucket, self.just_name)) != type(
+                assert type(swift_client.head_object(self.bucket, self.just_name)) != type(
                     None
                 )
             except AssertionError as e:
@@ -86,7 +86,7 @@ class StoredImage(object):
 
         elif self.object_storage_type == "s3":
             assert type(
-                self.s3_client.upload_file(self.filename, bucket, self.just_name)
+                self.s3_client.upload_file(self.filename, self.bucket, self.just_name)
             ) != type(None)
             print("uploaded to s3!")
 
@@ -95,14 +95,14 @@ class StoredImage(object):
             swift_client = swiftclient.client.Connection(
                 os_options=options, **self.object_storage_auth
             )
-            resp_headers, obj_contents = swift_client.get_object(bucket, self.filename)
+            resp_headers, obj_contents = swift_client.get_object(self.bucket, self.filename)
             with open(os.path.join("./", self.filename), "wb") as local:
                 local.write(obj_contents)
             swift_client.close()
 
         elif self.object_storage_type == "s3":
             with open(os.path.join("./", self.filename), "wb") as f:
-                self.s3_client.download_fileobj(bucket, self.filename, f)
+                self.s3_client.download_fileobj(self.bucket, self.filename, f)
             resp = send_file(os.path.join("./", self.filename), mimetype="image/png")
             os.remove(os.path.join("./", self.filename))
             return resp
@@ -115,12 +115,13 @@ class HeartbeatDB(object):
     def __init__(self):
         pass
 
-    def init_db(self, db_type, dbconfig, object_storage_type, object_storage_auth):
+    def init_db(self, db_type, dbconfig, object_storage_type, object_storage_auth, bucket):
         mysql_db = peewee.MySQLDatabase(**dbconfig)
         self.Image, self.Results = setup_classes(mysql_db)
         self.db_type = db_type
         self.object_storage_type = object_storage_type
         self.object_storage_auth = object_storage_auth
+        self.bucket = bucket
         mysql_db.connect()
         mysql_db.create_tables([self.Image, self.Results])
         mysql_db.close()
@@ -135,7 +136,7 @@ class HeartbeatDB(object):
         image = self.Image(filename=filename, origin=origin, other_data=json.dumps(other_data), file_hash=file_hash)
         image.save()
         stored_image = StoredImage(
-            path, self.object_storage_type, self.object_storage_auth
+            path, self.object_storage_type, self.object_storage_auth, self.bucket
         )
         stored_image.safe_file()
         stored_image.delete_locally()
@@ -143,7 +144,7 @@ class HeartbeatDB(object):
     def get_file(self, image_id):
         filename = self.Image.select().where(self.Image.id == image_id).get().filename
         stored_image = StoredImage(
-            filename, self.object_storage_type, self.object_storage_auth
+            filename, self.object_storage_type, self.object_storage_auth, self.bucket
         )
         stored_image.load_file()
         resp = send_file(os.path.join("./", filename), mimetype="image/png")
@@ -176,20 +177,20 @@ class HeartbeatDB(object):
 
     def retrieve_model(self):
         remotelist = StoredImage(
-            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
+            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth, self.bucket
         )
         remotelist.load_file()
         remotefile = StoredImage(
-            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
+            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth, self.bucket
         )
         remotefile.load_file()
 
     def safe_model(self):
         remotelist = StoredImage(
-            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
+            "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth, self.bucket
         )
         remotelist.safe_file()
         remotefile = StoredImage(
-            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
+            "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth, self.bucket
         )
         remotefile.safe_file()

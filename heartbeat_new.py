@@ -296,6 +296,7 @@ def admin_panel():
                 heartbeat_config.config["db_auth"],
                 heartbeat_config.config["object_storage_type"],
                 heartbeat_config.config["object_storage_auth"],
+                heartbeat_config.config["bucket"]
             )
             print(e)
         finally:
