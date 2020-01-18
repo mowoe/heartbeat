@@ -9,7 +9,7 @@ before_install:
 
 install:
   - sleep 5
-  - docker logs heartbeat
+  - docker logs -f heartbeat &
 
 script: pip install requests && python tests/endpoint_test.py && bash test.sh
 
