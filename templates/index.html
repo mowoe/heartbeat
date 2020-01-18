@@ -1,19 +1,35 @@
 <html>
-    {% include "head.jinja" %}
-    <body>
-        <div class="main-container">
-            <h1 class="samaritan-text">HEARTBEAT</h1>
+{% include "head.jinja" %}
+
+<body>
+    <div class="main-container">
+        <h1 class="samaritan-text">Heartbeat</h1>
         <div class="text-center">
-            <span id="typed" class="samaritan-text" style="text-transform: uppercase;"></span>
+            <span id="typed" style="text-transform: uppercase;"></span>
             <div class="cursor ">
-            <div class="triangle-up center"></div>
+                <div class="triangle-up center"></div>
             </div>
             <div id="typed-strings" style="text-transform: uppercase;">
-            <p>find people on images with their faces.</p>
-            <p>start by uploading an image.</p>
+                <p>finde rassisten und nazis über Gesichtserkennung.</p>
+                <p>schütze dich auf veranstaltungen vor rechter unterwanderung.</p>
+                <p>analysiere welche rechten strukturen in deiner stadt bestehen.</p>
+            </div>
         </div>
+        <h3>&Uuml;ber</h3>
+        <div class="infotext">
+            Dieser Service identifiziert bekannt Nazis anhand ihres Gesichts. Du kannst ein Bild von einem Menschen
+            hochladen, unser System versucht dann, per <b>Gesichtserkennung</b> vorhandene Bilder mit demselben Gesicht in
+            unserer Datenbank zu finden. Die Ergebnisse, sowie die Quellen und Aufnahmeorte der Bilder werden dir dann
+            angezeigt. Aus Sicherheitsgründen&trade; ist ein automatischer Upload von neuen Bildern in unsere Datenbank
+            zur Zeit nicht möglich. Bitte kontaktiere uns, wenn du über größere Mengen (>5) an Bildern von bspw. rechten
+            Demonstrationen verfügst.
+        </div>
+        <div class="grbckgrnd">
+            <a class="grbutton" href="/upload">Start</a>
         </div>
     </div>
-        
-    </body>
+    
+
+</body>
+
 </html>

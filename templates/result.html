@@ -11,10 +11,9 @@
                     <img src="/api/download_image?image_id={{image.id}}" alt="result" class="result_image">
                     <div class="overlay">
                             <div class="matchtext">
-                            {{image.score}}
-                            <br>
+                            score: {{image.score}}
                             {% for label in image.labels %}
-                                <p><span class="w3-tag">{{label}}</span></p>
+                                <p>{{label}}</p>
                             {% endfor %}
                             </div>
                         </div>                    
