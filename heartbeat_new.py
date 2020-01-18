@@ -261,6 +261,7 @@ class FaceTrainer(Thread):
     def __init__(self):
         super(FaceTrainer, self).__init__()
     def run(self):
+        print("Started Thread!")
         X = []
         y = []
         counter = 0
