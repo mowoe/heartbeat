@@ -19,6 +19,7 @@ from heartbeat_db import HeartbeatDB
 import sys
 import peewee
 import read_config
+from threading import Thread
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -256,6 +257,36 @@ def frontend_matching_images():
     os.remove(file.filename)
     return render_template("result.html", images=res)
 
+class FaceTrainer(Thread):
+    def __init__(self):
+        super(FaceTrainer, self).__init__()
+    def run(self):
+        X = []
+        y = []
+        counter = 0
+        work_type = "face_encodings"
+        results = heartbeat_db.get_all_work(work_type)
+        all_encodings = results
+        for encoding in all_encodings:
+            face_bounding_boxes = json.loads(encoding[2])["encoding"]
+            if len(face_bounding_boxes) > 2:
+                X.append(np.array(face_bounding_boxes))
+                y.append(encoding[0])
+                counter += 1
+        print("found {} encodings".format(counter))
+
+        n_neighbors = int(round(math.sqrt(len(X))))
+
+        knn_clf = neighbors.KNeighborsClassifier(
+            n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
+        )
+        knn_clf.fit(X, y)
+
+        with open(model_path, "wb") as f:
+            pickle.dump(knn_clf, f)
+        with open("trained_knn_list.clf", "wb") as f:
+            pickle.dump(y, f)
+        heartbeat_db.safe_model()
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():
@@ -263,32 +294,8 @@ def admin_panel():
     if type(action) != type(None):
         try:
             if action == "update_knn":
-                X = []
-                y = []
-                counter = 0
-                work_type = "face_encodings"
-                results = heartbeat_db.get_all_work(work_type)
-                all_encodings = results
-                for encoding in all_encodings:
-                    face_bounding_boxes = json.loads(encoding[2])["encoding"]
-                    if len(face_bounding_boxes) > 2:
-                        X.append(np.array(face_bounding_boxes))
-                        y.append(encoding[0])
-                        counter += 1
-                print("found {} encodings".format(counter))
-
-                n_neighbors = int(round(math.sqrt(len(X))))
-
-                knn_clf = neighbors.KNeighborsClassifier(
-                    n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
-                )
-                knn_clf.fit(X, y)
-
-                with open(model_path, "wb") as f:
-                    pickle.dump(knn_clf, f)
-                with open("trained_knn_list.clf", "wb") as f:
-                    pickle.dump(y, f)
-                heartbeat_db.safe_model()
+                trainer = FaceTrainer()
+                trainer.start()
         except peewee.InterfaceError as e:
             print("PeeWee Interface broken!")
             mysql_db = heartbeat_db.init_db(
