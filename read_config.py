@@ -40,6 +40,7 @@ class HeartbeatConfig(object):
                 
             }
             bucket = os.environ.get("OS_BUCKET")
+            print(bucket)
         else:
             log_msg("{} is not a valid Object Storage Option (found in ENV variables).".format(object_storage_type))
             exit()
