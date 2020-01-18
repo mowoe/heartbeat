@@ -4,7 +4,7 @@ services:
 
 before_install:
   - docker build -t mowoe/heartbeat .
-  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE -e DB_PORT=$DB_PORT -e OS_TYPE=$OS_TYPE -e DB_TYPE=$DB_TYPE -e OS_AUTH_URL=$OS_AUTH_URL -e OS_USERNAME=$OS_USERNAME -e OS_PASSWORD=$OS_PASSWORD -e OS_TENANT_NAME=$OS_TENANT_NAME  mowoe/heartbeat
+  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e OS_BUCKET=$OS_BUCKET -e DB_HOST=$DB_HOST -e DB_USER=$DB_USER -e DB_PASSWORD=$DB_PASSWORD -e DB_DATABASE=$DB_DATABASE -e DB_PORT=$DB_PORT -e OS_TYPE=$OS_TYPE -e DB_TYPE=$DB_TYPE -e OS_AUTH_URL=$OS_AUTH_URL -e OS_USERNAME=$OS_USERNAME -e OS_PASSWORD=$OS_PASSWORD -e OS_TENANT_NAME=$OS_TENANT_NAME  mowoe/heartbeat
   - docker ps -a
 
 install:
