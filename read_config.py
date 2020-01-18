@@ -37,8 +37,9 @@ class HeartbeatConfig(object):
                 "key":os.environ.get("OS_PASSWORD"),
                 "tenant_name":os.environ.get("OS_TENANT_NAME"),
                 "auth_version":'2',
-                "bucket":os.environ.get("OS_BUCKET")
+                
             }
+            bucket = os.environ.get("OS_BUCKET")
         else:
             log_msg("{} is not a valid Object Storage Option (found in ENV variables).".format(object_storage_type))
             exit()
@@ -57,7 +58,9 @@ class HeartbeatConfig(object):
             "object_storage_type":object_storage_type,
             "object_storage_auth":object_storage_auth,
             "db_type":db_type,
-            "db_auth":db_auth
+            "db_auth":db_auth,
+            "bucket":bucket
+
         }
         return config
 
