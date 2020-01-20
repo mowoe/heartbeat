@@ -47,8 +47,7 @@ distance_threshold = 0.5
 near_images_to_show = 5
 
 
-app.config['CELERY_BROKER_URL'] = 'amqp://localhost:5672/0'
-app.config['CELERY_RESULT_BACKEND'] = 'amqp://localhost:5672/0'
+app.config['CELERY_BROKER_URL'] = 'amqp://heartbeat-rabbit:5672/0'
 
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
