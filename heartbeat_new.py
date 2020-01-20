@@ -20,6 +20,7 @@ import sys
 import peewee
 import read_config
 from threading import Thread
+from celery import Celery
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -45,6 +46,12 @@ model_path = "./trained_knn_model.clf"
 distance_threshold = 0.5
 near_images_to_show = 5
 
+
+app.config['CELERY_BROKER_URL'] = 'amqp://localhost:5672/0'
+app.config['CELERY_RESULT_BACKEND'] = 'amqp://localhost:5672/0'
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -257,37 +264,35 @@ def frontend_matching_images():
     os.remove(file.filename)
     return render_template("result.html", images=res)
 
-class FaceTrainer(Thread):
-    def __init__(self):
-        super(FaceTrainer, self).__init__()
-    def run(self):
-        print("Started Thread!")
-        X = []
-        y = []
-        counter = 0
-        work_type = "face_encodings"
-        results = heartbeat_db.get_all_work(work_type)
-        all_encodings = results
-        for encoding in all_encodings:
-            face_bounding_boxes = json.loads(encoding[2])["encoding"]
-            if len(face_bounding_boxes) > 2:
-                X.append(np.array(face_bounding_boxes))
-                y.append(encoding[0])
-                counter += 1
-        print("found {} encodings".format(counter))
+@celery.task
+def train_model():
+    print("Started Thread!")
+    X = []
+    y = []
+    counter = 0
+    work_type = "face_encodings"
+    results = heartbeat_db.get_all_work(work_type)
+    all_encodings = results
+    for encoding in all_encodings:
+        face_bounding_boxes = json.loads(encoding[2])["encoding"]
+        if len(face_bounding_boxes) > 2:
+            X.append(np.array(face_bounding_boxes))
+            y.append(encoding[0])
+            counter += 1
+    print("found {} encodings".format(counter))
 
-        n_neighbors = int(round(math.sqrt(len(X))))
+    n_neighbors = int(round(math.sqrt(len(X))))
 
-        knn_clf = neighbors.KNeighborsClassifier(
-            n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
-        )
-        knn_clf.fit(X, y)
+    knn_clf = neighbors.KNeighborsClassifier(
+        n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
+    )
+    knn_clf.fit(X, y)
 
-        with open(model_path, "wb") as f:
-            pickle.dump(knn_clf, f)
-        with open("trained_knn_list.clf", "wb") as f:
-            pickle.dump(y, f)
-        heartbeat_db.safe_model()
+    with open(model_path, "wb") as f:
+        pickle.dump(knn_clf, f)
+    with open("trained_knn_list.clf", "wb") as f:
+        pickle.dump(y, f)
+    heartbeat_db.safe_model()
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():
@@ -295,8 +300,9 @@ def admin_panel():
     if type(action) != type(None):
         try:
             if action == "update_knn":
-                trainer = FaceTrainer()
-                trainer.start()
+                print("Starting")
+                task = train_model.delay()
+                print(task.ready())
         except peewee.InterfaceError as e:
             print("PeeWee Interface broken!")
             mysql_db = heartbeat_db.init_db(
@@ -331,4 +337,4 @@ def upload_via_frontend():
 
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", debug=True)
+    app.run("0.0.0.0", port=5001)#,debug=True)
