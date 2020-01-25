@@ -215,7 +215,7 @@ def upload_frontend():
 
 @app.route("/get_matching_images", methods=["POST"])
 def frontend_matching_images():
-    #heartbeat_db.retrieve_model()
+    heartbeat_db.retrieve_model()
     with open(model_path, "rb") as f:
         knn_clf = pickle.load(f)
     file = request.files["file"]
