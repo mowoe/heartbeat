@@ -30,15 +30,15 @@ You can choose if you would like the uploaded pictures to be saved locallly (in 
 ### Workers
 ![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/heartbeat_worker_first_step.png "Logo Title Text 1")
 
-#### Phase 1: The Worker requests an unprocessed Image and gets an id in response
+##### Phase 1: The Worker requests an unprocessed Image and gets an id in response
 
 ![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/heartbeat_worker_second_step.png "Logo Title Text 1")
 
-#### Phase 2: The Worker downloads the Image from the Server via the requested id.
+##### Phase 2: The Worker downloads the Image from the Server via the requested id.
 
 ![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/heartbeat_worker_last_step.png "Logo Title Text 1")
 
-#### Phase 3: The worker processes the image (face recognition) and submits the result (mathematical representation) back to the heartbeat server.
+##### Phase 3: The worker processes the image (face recognition) and submits the result (mathematical representation) back to the heartbeat server.
 
 ## Usage
 ### Upload an Image
