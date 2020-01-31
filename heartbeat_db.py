@@ -178,6 +178,7 @@ class HeartbeatDB(object):
         if os.path.isfile("trained_knn_list.clf"):
             if int(os.path.getmtime('trained_knn_list.clf')) < (int(time.time()-3600)):
                 print("Model is already new enough")
+                return
         print("Downloading model.")
         remotelist = StoredImage(
             "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
