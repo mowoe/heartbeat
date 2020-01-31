@@ -25,6 +25,9 @@ sudo docker run --name heartbeat \
 ```
 You can choose if you would like the uploaded pictures to be saved locallly (in the Docker container), or if you want them to be saved in an AWS S3 Bucket (is way cheaper than normal storage on VPS, as you quickly get into the Terabytes of images). To use Local space use the docker variable ```-e db_type=file```. To use the AWS S3 Storage change it to ```-e db_type=s3```. You also need to specify ```-e AWS_ACCESS_KEY=awskey```,```-e AWS_SECRET_KEY=aws_key``` and ```-e AWS_REGION=eu-central-1```(or any other region). Heartbeat supports other Bucket Storage Systems too, this is why you need to specify ```-e endpoint_url=http://s3.eu-central-1.amazonaws.com``` or any other Endpoint to an AWS S3 Storage like interface (like [min.io](https://min.io))
 
+## Flowcharts
+![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/src/images/heartbeat_worker_first_step.png "Logo Title Text 1")
+
 ## Usage
 ### Upload an Image
 To upload an Image via the API, you have to supply the URL to the image, direct Upload is currently only via the Frontend supported. You also have to supply an origin of the image, so it can later be traced back. If you have any other information about the image, you can supply them via the ```"img_info"``` Key. This is just a JSON Object with all Infos about the Image, which can also be used later for tracing the Image back.
