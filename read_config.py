@@ -52,6 +52,7 @@ class HeartbeatConfig(object):
             }
         else:
             log_msg("{} is not a valid Database Option (found in ENV variables).".format(db_type))
+            exit()
         config = {
             "object_storage_type":object_storage_type,
             "object_storage_auth":object_storage_auth,

@@ -85,9 +85,7 @@ class StoredImage(object):
                 swift_client.close()
 
         elif self.object_storage_type == "s3":
-            assert type(
-                self.s3_client.upload_file(self.filename, bucket, self.just_name)
-            ) != type(None)
+            self.s3_client.upload_file(self.filename, bucket, self.just_name)
             print("uploaded to s3!")
 
     def load_file(self):
@@ -103,9 +101,6 @@ class StoredImage(object):
         elif self.object_storage_type == "s3":
             with open(os.path.join("./", self.filename), "wb") as f:
                 self.s3_client.download_fileobj(bucket, self.filename, f)
-            resp = send_file(os.path.join("./", self.filename), mimetype="image/png")
-            os.remove(os.path.join("./", self.filename))
-            return resp
 
     def delete_locally(self):
         os.remove(self.filename)
