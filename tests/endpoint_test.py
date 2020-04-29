@@ -3,11 +3,13 @@ import json
 import hashlib
 import time
 
-def download_file(url):
+url = "http://localhost:9721"
+
+def download_file(donw_url):
     hash_object = hashlib.sha256(str(time.time()).encode())
     hex_dig = hash_object.hexdigest()
     local_filename = str(hex_dig) + ".png"
-    with requests.get(url, stream=True) as r:
+    with requests.get(donw_url, stream=True) as r:
         r.raise_for_status()
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192): 
@@ -15,7 +17,7 @@ def download_file(url):
                     f.write(chunk)
     return local_filename
 
-resp = requests.get("http://localhost:5000/")
+resp = requests.get(url+"/")
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
@@ -27,25 +29,30 @@ data = {
         'img_url':'https://mowoe.com/flasche_quadrat.png'
 }
     
-resp = requests.post("http://localhost:5000"+"/api/add_image",data=data)
+resp = requests.post(url+"/api/add_image",data=data)
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
-resp = requests.get("http://localhost:5000/api/request_work?work_type=face_encodings")
+print("Uploading succeeded!")
+resp = requests.get(url+"/api/request_work?work_type=face_encodings")
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
+print("Requesting work succeeded!")
 resp_json = resp.json()
+print(resp_json)
 image_id = resp_json["status"]
-fname = download_file("http://localhost:5000"+"/api/download_image?image_id="+str(image_id))
-
+print(image_id)
+fname = download_file(url+"/api/download_image?image_id="+str(image_id))
+print("Filename for downloading is: {}".format(fname))    
 face_encoding = {"encoding":[]}
 data = {
     "image_id":str(image_id),
     "work_type":"face_encodings",
     "result":json.dumps(face_encoding)
 }
-resp = requests.post("http://localhost:5000"+"/api/submit_work",data=data)
+resp = requests.post(url+"/api/submit_work",data=data)
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
+print("Submitting data succeeded!")  

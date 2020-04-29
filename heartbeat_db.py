@@ -125,7 +125,7 @@ class HeartbeatDB(object):
         path = os.path.join("./uploaded_pics", filename)
         file_hash = hash_file(path)
         for result in self.Image.select().where(self.Image.file_hash==file_hash).execute():
-            print("Duplicate!")
+            print("Duplicate: {}!".format(file_hash))
             return #An Image with the same hash is already in the database.
         image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
         image.save()
