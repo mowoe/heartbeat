@@ -14,6 +14,7 @@ from swiftclient.service import SwiftService, SwiftError
 import swiftclient
 from swiftclient.exceptions import ClientException
 import hashlib
+from shutil import copyfile
 
 bucket = "heartbeat-images"
 object_storage_auth = ""
@@ -62,6 +63,9 @@ class StoredImage(object):
         if self.object_storage_type == "s3":
             self.s3_client = boto3.client("s3", **object_storage_auth)
             print("established s3 connection!")
+        elif self.object_storage_type == "local":
+            if not os.path.exists("./heartbeat-images"):
+                os.makedirs("./heartbeat-images")
 
     def safe_file(self):
         if self.object_storage_type == "openstack":
@@ -88,6 +92,11 @@ class StoredImage(object):
             self.s3_client.upload_file(self.filename, bucket, self.just_name)
             print("uploaded to s3!")
 
+        elif self.object_storage_type == "local":
+            copyfile(self.filename, os.path.join("./heartbeat-images", self.filename.split("/")[-1]))
+
+
+
     def load_file(self):
         if self.object_storage_type == "openstack":
             swift_client = swiftclient.client.Connection(
@@ -101,6 +110,10 @@ class StoredImage(object):
         elif self.object_storage_type == "s3":
             with open(os.path.join("./", self.filename), "wb") as f:
                 self.s3_client.download_fileobj(bucket, self.filename, f)
+
+        elif self.object_storage_type == "local":
+            copyfile(os.path.join("./heartbeat-images", self.filename.split("/")[-1]),os.path.join(".",self.filename))
+
 
     def delete_locally(self):
         os.remove(self.filename)

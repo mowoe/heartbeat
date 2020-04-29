@@ -38,6 +38,8 @@ class HeartbeatConfig(object):
                 "tenant_name":os.environ.get("OS_TENANT_NAME"),
                 "auth_version":'2'
             }
+        elif object_storage_type == "local":
+            pass
         else:
             log_msg("{} is not a valid Object Storage Option (found in ENV variables).".format(object_storage_type))
             exit()
