@@ -11,5 +11,5 @@ install:
   - sleep 25
   - docker logs heartbeat
 
-script: pip install requests && python tests/endpoint_test.py && bash test.sh
+script: docker logs heartbeat & pip install requests && python tests/endpoint_test.py && bash test.sh
 
