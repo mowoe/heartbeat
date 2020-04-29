@@ -12,18 +12,21 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 ## Deployment
 Heartbeat needs an MySQL(-compatible) Database to store its faces and images. You need to create a user and a Database, the necessary tables are created by the peewee ORM itself.
 ##### The easiest way to deploy Heartbeat is by using docker:
+You still need a MySQL database running, e.g. on the docker host.
+If you create a database 'heartbeat', a user 'heartbeat', with the password 'heartbeat', you can just use the following command to start a heartbeat instance.
 ```bash
 sudo docker run --name heartbeat \
-                -p 80:80 \
-                -e DB_HOST=example.com \
+                -p 127.0.0.1:5000:80 \
+                -e DB_HOST=172.17.0.1\
                 -e DB_PORT=3306 \
+                -e DB_PASSWORD=heartbeat \
                 -e DB_DATABASE=heartbeat \
-                -e DB_PASSWORD=password\
                 -e DB_USER=heartbeat \
-                -e db_type=file \
+                -e DB_TYPE=mysql \
+                -e OS_TYPE=local \
                 mowoe/heartbeat:latest
 ```
-You can choose if you would like the uploaded pictures to be saved locallly (in the Docker container), or if you want them to be saved in an AWS S3 Bucket (is way cheaper than normal storage on VPS, as you quickly get into the Terabytes of images). To use Local space use the docker variable ```-e db_type=file```. To use the AWS S3 Storage change it to ```-e db_type=s3```. You also need to specify ```-e AWS_ACCESS_KEY=awskey```,```-e AWS_SECRET_KEY=aws_key``` and ```-e AWS_REGION=eu-central-1```(or any other region). Heartbeat supports other Bucket Storage Systems too, this is why you need to specify ```-e endpoint_url=http://s3.eu-central-1.amazonaws.com``` or any other Endpoint to an AWS S3 Storage like interface (like [min.io](https://min.io))
+You can choose if you would like the uploaded pictures to be saved locallly (in the Docker container), or if you want them to be saved in an AWS S3 Bucket (is way cheaper than normal storage on VPS, as you quickly get into the Terabytes of images). To use Local space use the docker variable ```-e db_type=local```. To use the AWS S3 Storage change it to ```-e OS_TYPE=s3```. You also need to specify ```-e AWS_ACCESS_KEY=awskey```,```-e AWS_SECRET_KEY=aws_key``` and ```-e AWS_REGION=eu-central-1```(or any other region). Heartbeat supports other Bucket Storage Systems too, this is why you need to specify ```-e endpoint_url=http://s3.eu-central-1.amazonaws.com``` or any other Endpoint to an AWS S3 Storage like interface (like [min.io](https://min.io))
 
 ## Flowcharts
 
