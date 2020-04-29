@@ -9,7 +9,7 @@ before_install:
   - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
   - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
   - docker build -t mowoe/heartbeat .
-  - docker run --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=172.17.0.1  -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+  - docker run --network="host" --name heartbeat -d -p 127.0.0.1:5000:80 -e DB_HOST=127.0.0.1  -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
   - docker ps -a
 
 install:
