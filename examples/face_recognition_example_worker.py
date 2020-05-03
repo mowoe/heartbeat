@@ -14,11 +14,11 @@ import argparse
 verbose = True
 
 parser = argparse.ArgumentParser(description='Do Facerec stuff on heartbeat.')
-parser.add_argument('port', metavar='N', type=str,
+parser.add_argument('port', metavar='port', type=str,
                      help='an integer for the accumulator')
-parser.add_argument('host', metavar='N', type=str,
+parser.add_argument('host', metavar='host', type=str,
                      help='an integer for the accumulator')       
-parser.add_argument('num_threads', metavar='N', type=int,
+parser.add_argument('num_threads', metavar='num_threads', type=int,
                      help='an integer for the accumulator')           
 args = parser.parse_args()
 host = args.host

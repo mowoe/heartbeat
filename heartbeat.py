@@ -160,25 +160,25 @@ def get_matching_images():
         knn_clf = pickle.load(f)
     file = request.files["file"]
     file.save("facerec_img.png")
-    X_img = face_recognition.load_image_file("facerec_img.png")
-    X_face_locations = face_recognition.face_locations(X_img)
-    if len(X_face_locations) == 0:
+    x_img = face_recognition.load_image_file("facerec_img.png")
+    x_face_locations = face_recognition.face_locations(x_img)
+    if len(x_face_locations) == 0:
         return []
     faces_encodings = face_recognition.face_encodings(
-        X_img, known_face_locations=X_face_locations
+        x_img, known_face_locations=x_face_locations
     )
 
     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=1)
     are_matches = [
         closest_distances[0][i][0] <= distance_threshold
-        for i in range(len(X_face_locations))
+        for i in range(len(x_face_locations))
     ]
     print(
         json.dumps(
             [
                 (pred, loc) if rec else ("unknown", loc)
                 for pred, loc, rec in zip(
-                    knn_clf.predict(faces_encodings), X_face_locations, are_matches
+                    knn_clf.predict(faces_encodings), x_face_locations, are_matches
                 )
             ]
         )
@@ -187,7 +187,7 @@ def get_matching_images():
         [
             (pred, loc) if rec else ("unknown", loc)
             for pred, loc, rec in zip(
-                knn_clf.predict(faces_encodings), X_face_locations, are_matches
+                knn_clf.predict(faces_encodings), x_face_locations, are_matches
             )
         ]
     )
@@ -196,7 +196,7 @@ def get_matching_images():
             "result": [
                 (pred, loc) if rec else ("unknown", loc)
                 for pred, loc, rec in zip(
-                    knn_clf.predict(faces_encodings), X_face_locations, are_matches
+                    knn_clf.predict(faces_encodings), x_face_locations, are_matches
                 )
             ]
         }
@@ -264,35 +264,6 @@ def frontend_matching_images():
     os.remove(file.filename)
     return render_template("result.html", images=res)
 
-@celery.task
-def train_model():
-    print("Started Thread!")
-    X = []
-    y = []
-    counter = 0
-    work_type = "face_encodings"
-    results = heartbeat_db.get_all_work(work_type)
-    all_encodings = results
-    for encoding in all_encodings:
-        face_bounding_boxes = json.loads(encoding[2])["encoding"]
-        if len(face_bounding_boxes) > 2:
-            X.append(np.array(face_bounding_boxes))
-            y.append(encoding[0])
-            counter += 1
-    print("found {} encodings".format(counter))
-
-    n_neighbors = int(round(math.sqrt(len(X))))
-
-    knn_clf = neighbors.KNeighborsClassifier(
-        n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
-    )
-    knn_clf.fit(X, y)
-
-    with open(model_path, "wb") as f:
-        pickle.dump(knn_clf, f)
-    with open("trained_knn_list.clf", "wb") as f:
-        pickle.dump(y, f)
-    heartbeat_db.safe_model()
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():
@@ -302,8 +273,7 @@ def admin_panel():
             if action == "update_knn":
                 print("Starting")
                 print("Started Thread!")
-                X = []
-                y = []
+                X,y = [], []
                 counter = 0
                 work_type = "face_encodings"
                 results = heartbeat_db.get_all_work(work_type)
