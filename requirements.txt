@@ -10,3 +10,4 @@ boto3>=1.9.187
 python-swiftclient>=3.8.0
 python-keystoneclient>=3.20.0
 celery>=4.4.0
+cryptography>=2.9.2
