@@ -14,15 +14,13 @@ import argparse
 verbose = True
 
 parser = argparse.ArgumentParser(description='Do Facerec stuff on heartbeat.')
-parser.add_argument('port', metavar='port', type=str,
-                     help='an integer for the accumulator')
-parser.add_argument('host', metavar='host', type=str,
-                     help='an integer for the accumulator')       
+parser.add_argument('host', metavar='base_url', type=str,
+                     help='Full url with port')       
 parser.add_argument('num_threads', metavar='num_threads', type=int,
-                     help='an integer for the accumulator')           
+                     help='an integer for the accumulator')      
+                          
 args = parser.parse_args()
 host = args.host
-port = args.port
 num_threads = args.num_threads
 class FaceRecThread(threading.Thread):
     def __init__(self, threadID, host):
@@ -48,7 +46,7 @@ class FaceRecThread(threading.Thread):
     def get_work(self):
         try:
             resp = requests.get(
-                "http://" + host + ":" + port + "/api/request_work?work_type=face_encodings"
+                host +"/api/request_work?work_type=face_encodings"
             )
             resp_json = resp.json()
             image_id = resp_json["status"]
@@ -56,10 +54,7 @@ class FaceRecThread(threading.Thread):
                 print("empty")
                 return
             fname = self.download_file(
-                "http://"
-                + host
-                + ":"
-                + port
+                host
                 + "/api/download_image?image_id="
                 + str(image_id)
             )
@@ -73,7 +68,7 @@ class FaceRecThread(threading.Thread):
                     "result": json.dumps(face_encoding),
                 }
                 resp = requests.post(
-                    "http://" + host + ":" + port + "/api/submit_work", data=data
+                    host + "/api/submit_work", data=data
                 )
             else:
                 face_encoding = {"encoding": []}
@@ -83,7 +78,7 @@ class FaceRecThread(threading.Thread):
                     "result": json.dumps(face_encoding),
                 }
                 resp = requests.post(
-                    "http://" + host + ":" + port + "/api/submit_work", data=data
+                    host + "/api/submit_work", data=data
                 )
             self.counter += 1
         except Exception as e:
@@ -95,7 +90,7 @@ class FaceRecThread(threading.Thread):
                 "result": json.dumps(face_encoding),
             }
             resp = requests.post(
-                "http://" + host + ":" + port + "/api/submit_work", data=data
+                host + "/api/submit_work", data=data
             )
         finally:
             os.remove(fname)
