@@ -1,7 +1,7 @@
 import peewee
 import requests
 from peewee import MySQLDatabase, SqliteDatabase
-from peewee import CharField, ForeignKeyField, DateTimeField, fn, BooleanField
+from peewee import CharField, ForeignKeyField, DateTimeField, fn, BooleanField, TimestampField
 import peewee
 import boto3
 from flask import send_file
@@ -34,7 +34,7 @@ def hash_file(filename):
 def setup_classes(mysql_db):
     class Image(peewee.Model):
         filename = CharField()
-        uploaded_date = DateTimeField(default=datetime.datetime.now)
+        uploaded_date = TimestampField(default=time.time())
         origin = CharField(default="unknown")
         other_data = CharField(default="null", max_length=7000)
         face_rec_worked = BooleanField(default=False)
