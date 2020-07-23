@@ -114,6 +114,37 @@ def add_image():
         )
 
 
+@app.route("/api/add_image_file", methods=["POST"])
+def add_image_file():
+    try:
+        information = request.form.get("img_info")
+        origin = request.form.get("origin")
+        time_hash = hashlib.sha256(str(time.time()).encode()).hexdigest()
+        new_filename = str(time_hash) + ".png"
+        file = request.files["file"]
+        file.save(os.path.join(UPLOAD_FOLDER, new_filename))
+        information = json.loads(information)
+        information = json.dumps(information)
+        heartbeat_db.upload_file(new_filename, origin, information)
+        return constr_resp("success")
+    except peewee.InterfaceError as e:
+        print("PeeWee Interface broken!")
+        mysql_db = heartbeat_db.init_db(
+            heartbeat_config.config["db_type"],
+            heartbeat_config.config["db_auth"],
+            heartbeat_config.config["object_storage_type"],
+            heartbeat_config.config["object_storage_auth"],
+        )
+        print(e)
+        return constr_resp(
+            "database error", "if this error keeps occuring contact admin"
+        )
+    except Exception as e:
+        print(e)
+        return constr_resp(
+            "error", "unknown error, maybe not all query parameters were specified?"
+        )
+
 @app.route("/api/request_work", methods=["GET"])
 def request_work():
     work_type = request.args.get("work_type")
