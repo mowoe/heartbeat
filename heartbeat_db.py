@@ -34,7 +34,7 @@ def hash_file(filename):
 def setup_classes(mysql_db):
     class Image(peewee.Model):
         filename = CharField()
-        uploaded_date = TimestampField(default=time.time())
+        #uploaded_date = TimestampField(default=time.time)
         origin = CharField(default="unknown")
         other_data = CharField(default="null", max_length=7000)
         face_rec_worked = BooleanField(default=False)
