@@ -5,7 +5,7 @@ import sys
 from os import listdir
 from os.path import isfile, join
 
-host,port = "mowoe.com",str(9721)
+host,port = "heartbeat.mowoe.com",str(443)
 
 mypath = sys.argv[1]
 
@@ -16,7 +16,7 @@ for fil in onlyfiles:
         print("uploading: "+mypath+fil)
         files = {'file': open(mypath+fil,'rb')}
         #start = time.time()
-        r = requests.post("http://"+host+":"+port+"/api/add_image_via_file", files=files, allow_redirects=False)
+        r = requests.post("https://"+host+":"+port+"/api/add_image", files=files, allow_redirects=False)
         print(r.text)
 
 print("done")

@@ -141,10 +141,12 @@ class HeartbeatDB(object):
             print("Duplicate: {}!".format(file_hash))
             return #An Image with the same hash is already in the database.
         image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
+        print("Uploaded to DB.")
         image.save()
         stored_image = StoredImage(
             path, self.object_storage_type, self.object_storage_auth
         )
+        print("Uploaded to Object Storage.")
         stored_image.safe_file()
         stored_image.delete_locally()
 

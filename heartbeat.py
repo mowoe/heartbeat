@@ -76,6 +76,7 @@ def _db_close(exc):
 
 @app.route("/api/add_image", methods=["POST"])
 def add_image():
+    print("Started add_image API call")
     try:
         img_url = request.form.get("img_url")
         information = request.form.get("img_info")
@@ -90,9 +91,11 @@ def add_image():
             return constr_resp("error", "no correct fileformat")
         time_hash = hashlib.sha256(str(time.time()).encode()).hexdigest()
         new_filename = str(time_hash) + fend
+        print("Downloading Image {}...".format(img_url))
         urllib.request.urlretrieve(img_url, os.path.join(UPLOAD_FOLDER, new_filename))
         information = json.loads(information)
         information = json.dumps(information)
+        print("Uploading to DB and OS...")
         heartbeat_db.upload_file(new_filename, origin, information)
         return constr_resp("success")
     except peewee.InterfaceError as e:
