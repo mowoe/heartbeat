@@ -92,11 +92,15 @@ def add_image():
         time_hash = hashlib.sha256(str(time.time()).encode()).hexdigest()
         new_filename = str(time_hash) + fend
         print("Downloading Image {}...".format(img_url))
+        s = time.time()
         urllib.request.urlretrieve(img_url, os.path.join(UPLOAD_FOLDER, new_filename))
+        print("Downloading took {} seconds".format(str(time.time()-s)))
         information = json.loads(information)
         information = json.dumps(information)
         print("Uploading to DB and OS...")
+        s = time.time()
         heartbeat_db.upload_file(new_filename, origin, information)
+        print("Uploading to DB took {} seconds".format(str(time.time()-s)))
         return constr_resp("success")
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
