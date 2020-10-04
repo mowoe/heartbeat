@@ -10,4 +10,4 @@ COPY ./examples /app/examples
 COPY ./heartbeat_db.py /app/heartbeat_db.py
 COPY ./read_config.py /app/read_config.py
 COPY ./heartbeat.py /app/main.py
-RUN echo listen=500 >> /etc/uwsgi/uwsgi.ini
+RUN echo listen=120 >> /etc/uwsgi/uwsgi.ini
