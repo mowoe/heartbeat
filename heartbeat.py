@@ -189,7 +189,9 @@ def download_image():
             "error.html",
             errormessage="Das Bild scheint nicht mehr vorhanden zu sein. Sorry!",
         )
-    return resp
+        return resp, 404
+    else:
+        return resp, 200
 
 
 @app.route("/api/get_matching_images", methods=["POST"])
