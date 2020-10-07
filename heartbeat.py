@@ -289,6 +289,7 @@ def frontend_matching_images():
     print("Those are the scores of the images found:")
     print(closest_distances[0][0])
     labels = [all_labels[i] for i in closest_distances[1][0]]
+    print("Real Labels:\n{}".format(labels))
     res = []
     for x in range(len(closest_distances[1][0])):
         score = closest_distances[0][0][x]
