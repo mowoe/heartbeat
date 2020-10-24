@@ -15,7 +15,10 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 4. Click "Upload".
 5. Wait for the results.
 
-![Example GIF](https://github.com/mowoe/heartbeat/raw/master/images/use.gif "Logo Title Text 1")
+<p align="center">
+  <img src="https://github.com/mowoe/heartbeat/raw/master/images/use.gif"/>
+</p>
+
 
 
 
