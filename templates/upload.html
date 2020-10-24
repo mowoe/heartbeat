@@ -1,22 +1,35 @@
 <html>
-    {% include "head.jinja" %}
-    <body>
-        <div class="main-container">
-            <h1>HEARTBEAT</h1>
-            <h5>Bild hochladen</h5>
-            <form method="post" action="/get_matching_images" enctype="multipart/form-data">
-                <div class="grbckgrnd">
+{% include "head.jinja" %}
+
+<body>
+    <script>
+        function update() {
+            document.getElementById("file-name").textContent = document.getElementById("file-upload").files[0].name;
+            document.getElementById("file-name").style.visibility = "visible";
+            document.getElementById("file-name-box").style.visibility = "visible";
+        }  
+    </script>
+    <div class="main-container">
+        <h1>HEARTBEAT</h1>
+        <h5>Bild hochladen</h5>
+        <form method="post" action="/get_matching_images" enctype="multipart/form-data">
+            <div class="grbckgrnd">
                 <div class="fileUpload grbckgrnd">
                     <span>Datei ausw&auml;hlen</span>
-                    <input class="upload" name="file" type="file" size="50" accept="image/*"> 
+                    <input onchange="update();" id="file-upload" class="upload" name="file" type="file" size="50"
+                        accept="image/*">
                 </div>
+                <div id="file-name-box" style="visibility: hidden;" class="fileUpload"> 
+                    File: <span id="file-name" style="visibility: hidden;" ></span>
                 </div>
-                <div class="grbckgrnd">
-                        <button class="grbutton" >Hochladen</button>
-                </div>
-            </form>
-            <br><br>
-           Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde. 
-        </div>
-    </body>
+            </div>
+            <div class="grbckgrnd">
+                <button class="grbutton">Hochladen</button>
+            </div>
+        </form>
+        <br><br>
+        Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde.
+    </div>
+</body>
+
 </html>

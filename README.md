@@ -8,6 +8,10 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 
 [:warning: This Demo](https://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it.
 
+## Play Around
+
+![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/use.gif "Logo Title Text 1")
+
 
 ## Deployment
 Heartbeat needs an MySQL(-compatible) Database to store its faces and images. You need to create a user and a Database, the necessary tables are created by the peewee ORM itself.
