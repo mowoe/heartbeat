@@ -9,8 +9,14 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 [:warning: This Demo](https://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it.
 
 ## Play Around
+1. Go to [heartbeat.mowoe.com](https://heartbeat.mowoe.com)
+2. Click "Start".
+3. Upload a Picture of someone, e.g. German chancellor Angela Merkel.
+4. Click "Upload".
+5. Wait for the results.
 
-![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/use.gif "Logo Title Text 1")
+![Example GIF](https://github.com/mowoe/heartbeat/raw/master/images/use.gif "Logo Title Text 1")
+
 
 
 ## Deployment
@@ -52,7 +58,7 @@ As the creation of the model can take very long, it is not done automatically. T
 
 ##### Phase 3: The worker processes the image (face recognition) and submits the result (mathematical representation) back to the heartbeat server.
 
-## Usage
+## (API) Usage
 ### Upload an Image
 To upload an Image via the API, you have to supply the URL to the image, direct Upload is currently only via the Frontend supported. You also have to supply an origin of the image, so it can later be traced back. If you have any other information about the image, you can supply them via the ```"img_info"``` Key. This is just a JSON Object with all Infos about the Image, which can also be used later for tracing the Image back.
 ```http
