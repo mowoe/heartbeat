@@ -20,7 +20,6 @@ import sys
 import peewee
 import read_config
 from threading import Thread
-from celery import Celery
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -46,12 +45,6 @@ model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
 
-
-app.config['CELERY_BROKER_URL'] = 'amqp://heartbeat-rabbit:5672/0'
-
-#celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-celery = Celery(app.name, broker=heartbeat_config.config["celery_broker_url"])
-celery.conf.update(app.config)
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
