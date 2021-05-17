@@ -25,8 +25,17 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 ## Deployment
 Heartbeat needs an MySQL(-compatible) Database to store its faces and images. You need to create a user and a Database, the necessary tables are created by the peewee ORM itself.
 ### The easiest way to deploy Heartbeat is by using docker:
-You still need a MySQL database running, e.g. on the docker host.
-If you create a database 'heartbeat', a user 'heartbeat', with the password 'heartbeat', you can just use the following command to start a heartbeat instance.
+**You need a MySQL database running**, e.g. on the docker host.
+If you create a database 'heartbeat', a user 'heartbeat', with the password 'heartbeat', you can just use the following command to start a heartbeat instance.\
+The appropriate SQL code is:
+```sql
+CREATE DATABASE heartbeat;
+CREATE USER 'heartbeat'@'localhost' IDENTIFIED BY 'heartbeat';
+GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'localhost';
+FLUSH PRIVILEGES;
+```
+:warning: **Please do not use the default login** shown here under any circumstances! \
+Finally you can start the docker container:
 ```bash
 sudo docker run --name heartbeat \
                 -p 127.0.0.1:5000:80 \

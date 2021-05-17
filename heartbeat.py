@@ -304,6 +304,12 @@ def frontend_matching_images():
     return render_template("result.html", images=res)
 
 
+@app.route("/delete",methods=["POST"])
+def delete_file():
+    imgid = request.args.get("image_id")
+    resp = heartbeat_db.get_file(imgid)
+    return render_template("success.html")
+
 @app.route("/admin", methods=["GET"])
 def admin_panel():
     action = request.args.get("action")

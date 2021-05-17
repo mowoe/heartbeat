@@ -95,7 +95,13 @@ class StoredImage(object):
         elif self.object_storage_type == "local":
             copyfile(self.filename, os.path.join("./heartbeat-images", self.filename.split("/")[-1]))
 
-
+    def remove_file(self):
+        if self.object_storage_type == "openstack":
+            swift_client = swiftclient.client.Connection(
+                os_options=options, **self.object_storage_auth
+            )
+            
+            swift_client.close()
 
     def load_file(self):
         if self.object_storage_type == "openstack":
