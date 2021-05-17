@@ -35,6 +35,7 @@ GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'localhost';
 FLUSH PRIVILEGES;
 ```
 :warning: **Please do not use the default login** shown here under any circumstances! \
+Heartbeat will create the appropriate Tables by itself. \
 Finally you can start the docker container:
 ```bash
 sudo docker run --name heartbeat \
