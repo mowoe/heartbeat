@@ -5,7 +5,7 @@
 Heartbeat is a Face Recognition app, that you can upload Images to find more Images with the same face.
 
 #### This Project *__can__* be used for evil shit, but the main Purpose was to show how easy and dangerous it is to build a mass surveillance service.
-
+<!---
 [:warning: This Demo](https://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it.
 
 ## Play Around
@@ -14,7 +14,7 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 3. Upload a Picture of someone, e.g. German chancellor Angela Merkel.
 4. Click "Upload".
 5. Wait for the results.
-
+-->
 <p align="center">
   <img src="https://github.com/mowoe/heartbeat/raw/master/images/use.gif"/>
 </p>
@@ -44,7 +44,6 @@ sudo docker run -d --name heartbeat_mariadb \
                 mariadb:latest
 ```
 :warning: **Please do not use the default login** shown here under any circumstances! \
-Heartbeat will create the appropriate Tables by itself. \
 
 ### 2. Heartbeat
 Finally you can start the docker container:
@@ -62,8 +61,8 @@ sudo docker run --name heartbeat \
 ```
 Visit [localhost:5000](localhost:5000) to use the created heartbeat Instance.
 ### 2a. Advanced 
-By default heartbeat stores all uploaded images inside of the container as plain files. This however can pose some problems: The files _will_ be deleted as soon as the docker container is deleted, which will render the whole heartbeat useless. To combat this, external storage is currently supported in the form of S3-compatible storage buckets (e.g. AWS, min.io).
-When using any object storage, please be aware, that the bucket _needs_ to be named `heartbeat`.\
+By default heartbeat stores all uploaded images inside of the container as plain files. This however can pose some problems: The files _will_ be deleted as soon as the docker container is deleted, which will render the whole heartbeat instance useless. To combat this, external storage is currently supported in the form of S3-compatible storage buckets (e.g. AWS, min.io).
+When using any object storage, please be aware, that the bucket _needs_ to be named `heartbeat`.
 1. To use Local space use the docker variable ```-e OS_TYPE=local```. 
 2. To use the AWS S3 Storage change it to ```-e OS_TYPE=s3```. 
     * You also need to specify: 
@@ -78,7 +77,7 @@ From now on you can use the heartbeat instance and upload images.
 * The main page ```/``` is for uploading pictures to get checked and find similar faces.
 * To upload new images to heartbeat (which will be processed and faces found on them will be saved) visit ```/upload_new ```
 
-To actually use heartbeat, each image has to be processed by face recognition software. To unload some work off of the webserver, this is done remotely (while this of course can run on the same machine). The easiest to do this is again by spawning a docker container:
+To actually use heartbeat, each image has to be processed by face recognition software. To unload some work off of the webserver, this is done remotely (while this of course can run on the same machine). The easiest way to do this is again by spawning a docker container:
 ```bash
 sudo docker run --name heartbeat_worker \
                 -d -e HB_HOST=172.17.0.1 \
@@ -90,7 +89,7 @@ sudo docker run --name heartbeat_worker \
 This will spawn two threads which will constantly look for unprocessed images and then process them. This is still wip and a bit hacky so dont expect good performance or stability
 
 ### 4. Creating the Face Recognition Model
-
+After all images have been processed, the value-vectors need to be combined in one model. This will be a representation of a 265-Dimension Space, which will serve as some kind of lookup-table for the identification of faces. 
 As the creation of the model can take very long, it is not done automatically. This means a face recognition request to heartbeat will fail, if you didnt train a model yet. You can train a model by going to http://heartbeat-host/admin. This is not advised for huge amounts of images, as the nginx *will* timeout. If you have large amounts of data, please use a script, which does the training by itself and then uploads the model to your Data storage. This script is still WIP and not published, which means heartbeat is currently unable to handle very large data amounts, but in the near future this will be fixed.
 
 ## Flowcharts
