@@ -45,6 +45,13 @@ model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
 
+try:
+    os.mkdir(UPLOAD_FOLDER)
+except OSError:
+    print ("Creation of the directory {} failed".format(UPLOAD_FOLDER))
+else:
+    print ("Successfully created the directory {}".format(UPLOAD_FOLDER))
+
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
