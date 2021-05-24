@@ -30,6 +30,7 @@ data = {
 }
     
 resp = requests.post(url+"/api/add_image",data=data)
+print(resp.text)
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
