@@ -12,4 +12,3 @@ python-keystoneclient>=3.20.0
 celery>=4.4.0
 cryptography>=2.9.2
 gunicorn>=20.1.0
-urllib3==1.24.2

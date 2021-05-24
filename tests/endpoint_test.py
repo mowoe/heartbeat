@@ -21,15 +21,23 @@ resp = requests.get(url+"/")
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
+
+import numpy
+from PIL import Image
+
+imarray = numpy.random.rand(100,100,3) * 255
+im = Image.fromarray(imarray.astype('uint8')).convert('RGBA')
+im.save('result_image.png')
+files = {'file': open('result_image.png','rb')}
+
 data = {
         'origin':"test",
         'img_info':json.dumps({
             "img_was_found_on":"test"
         }),
-        'img_url':'https://picsum.photos/200/300.jpg'
 }
     
-resp = requests.post(url+"/api/add_image",data=data)
+resp = requests.post(url+"/api/add_image_file",data=data, files=files)
 print(resp.text)
 if resp.status_code != 200:
     print(resp.text)
