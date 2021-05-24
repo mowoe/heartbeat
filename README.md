@@ -5,9 +5,9 @@
 Heartbeat is a Face Recognition app, that you can upload Images to find more Images with the same face.
 
 #### This Project *__can__* be used for evil shit, but the main Purpose was to show how easy and dangerous it is to build a mass surveillance service.
-<!---
-[:warning: This Demo](https://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it.
 
+[:warning: http://heartbeat.mowoe.com](http://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it. (Wait up to 30s, the heroku dyno takes this long to start up.)
+<!--
 ## Play Around
 1. Go to [heartbeat.mowoe.com](https://heartbeat.mowoe.com)
 2. Click "Start".
@@ -43,7 +43,7 @@ sudo docker run -d --name heartbeat_mariadb \
                 -e MARIADB_PASSWORD=heartbeat \
                 mariadb:latest
 ```
-:warning: **Please do not use the default login** shown here under any circumstances! \
+:warning: **Please do not use the default login** shown here under any circumstances! 
 
 ### 2. Heartbeat
 Finally you can start the docker container:
@@ -84,9 +84,9 @@ sudo docker run --name heartbeat_worker \
                 -e HB_PORT=80 \
                 mowoe/heartbeat_worker:latest
 ```
-(adjust ip and port accordingly)
+(adjust ip and port accordingly, container *will* fail if HB_HOST is not in the form of example.xyz or 1.2.3.4, as well as containing `/` or other unnecessary characters)
 
-This will spawn two threads which will constantly look for unprocessed images and then process them. This is still wip and a bit hacky so dont expect good performance or stability
+This will spawn two threads which will constantly look for unprocessed images and then process them. This is still wip and a bit hacky so dont expect good performance or stability. Due to some lil fuckups this doesnt really work as intended, when there are below 10 images saved in heartbeat. Also, please be aware that face recognition will only work as soon as more than 5 faces have been recognized and saved to heartbeat.
 
 ### 4. Creating the Face Recognition Model
 After all images have been processed, the value-vectors need to be combined in one model. This will be a representation of a 265-Dimension Space, which will serve as some kind of lookup-table for the identification of faces. 
