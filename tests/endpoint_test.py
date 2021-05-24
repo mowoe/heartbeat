@@ -26,7 +26,7 @@ data = {
         'img_info':json.dumps({
             "img_was_found_on":"test"
         }),
-        'img_url':'https://picsum.photos/200/300'
+        'img_url':'https://picsum.photos/200/300.jpg'
 }
     
 resp = requests.post(url+"/api/add_image",data=data)
