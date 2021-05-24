@@ -6,7 +6,8 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 
 #### This Project *__can__* be used for evil shit, but the main Purpose was to show how easy and dangerous it is to build a mass surveillance service.
 
-[:warning: http://heartbeat.mowoe.com](http://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it. (Wait up to 30s, the heroku dyno takes this long to start up.)
+## Demo
+[http://heartbeat.mowoe.com](http://heartbeat.mowoe.com) is fed with Images from various social Media Sites, e.g. Instagram. You can upload a picture of yourself or anyone else and Heartbeat will try to find images with the same person on it. (Wait up to 30s, the heroku dyno takes this long to start up.)
 <!--
 ## Play Around
 1. Go to [heartbeat.mowoe.com](https://heartbeat.mowoe.com)

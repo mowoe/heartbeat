@@ -26,7 +26,7 @@ data = {
         'img_info':json.dumps({
             "img_was_found_on":"test"
         }),
-        'img_url':'https://mowoe.com/flasche_quadrat.png'
+        'img_url':'https://picsum.photos/200/300'
 }
     
 resp = requests.post(url+"/api/add_image",data=data)
