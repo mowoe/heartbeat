@@ -4,6 +4,10 @@
 
 Heartbeat is a Face Recognition app, that you can upload Images to find more Images with the same face.
 
+1. [Demo](#demo)
+2. [Deployment with Docker](#deployment-with-docker)
+3. [Deployment without Docker](#deployment-without-docker)
+
 #### This Project *__can__* be used for evil shit, but the main Purpose was to show how easy and dangerous it is to build a mass surveillance service.
 
 ## Demo
@@ -23,7 +27,7 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 
 
 
-## Deployment
+## Deployment with docker
 ### 1. Database
 Heartbeat needs a MySQL(-compatible) Database to store its faces and images. You need to create a user and a Database, the necessary tables are created by the peewee ORM itself.
 If you want to create the Database yourself or already have a mysql/mariadb instance running you can use this code:
@@ -93,8 +97,68 @@ This will spawn two threads which will constantly look for unprocessed images an
 After all images have been processed, the value-vectors need to be combined in one model. This will be a representation of a 265-Dimension Space, which will serve as some kind of lookup-table for the identification of faces. 
 As the creation of the model can take very long, it is not done automatically. This means a face recognition request to heartbeat will fail, if you didnt train a model yet. You can train a model by going to http://heartbeat-host/admin. This is not advised for huge amounts of images, as the nginx *will* timeout. If you have large amounts of data, please use a script, which does the training by itself and then uploads the model to your Data storage. This script is still WIP and not published, which means heartbeat is currently unable to handle very large data amounts, but in the near future this will be fixed.
 
-## Flowcharts
+## Deployment without Docker
+### 1. Database
+Heartbeat needs a MySQL(-compatible) Database to store its faces and images. You need to create a user and a Database, the necessary tables are created by the peewee ORM itself.
+Startup a e.g. mariadb (compatible) server and execute the following sql code:
+```sql
+CREATE DATABASE heartbeat;
+CREATE USER 'heartbeat'@'localhost' IDENTIFIED BY 'heartbeat';
+GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'localhost';
+FLUSH PRIVILEGES;
+```
+### 2. Heartbeat
+Clone the repository:
+```bash
+git clone https://github.com/mowoe/heartbeat.git
+cd heartbeat
+```
+First you need to install all necessary python packages, which can take some time:
+```bash
+pip install -r requirements.txt
+```
+### 3. Create a config File
+Create a new file, name it `heartbeat_conf.json` and add the following contents:
+```json
 
+   "object_storage_type":"local",
+   "db_type":"mysql",
+   "db_auth":{
+      "host":"localhost",
+      "database":"heartbeat",
+      "user":"heartbeat",
+      "password":"heartbeat",
+      "port":3306
+   }
+}
+```
+### 4. Run
+```bash
+gunicorn -w 1 heartbeat:app
+```
+If everything went well, you should be able to access heartbeat via [localhost:8000](http://localhost:8000) and you are done!
+
+### 5. Usage
+From now on you can use the heartbeat instance and upload images. 
+* The main page ```/``` is for uploading pictures to get checked and find similar faces.
+* To upload new images to heartbeat (which will be processed and faces found on them will be saved) visit ```/upload_new ```
+
+To actually use heartbeat, each image has to be processed by face recognition software. While it is advised to do this work on a more powerful machine, you can use the supplied script to do this on you machine:
+```bash
+cd heartbeat
+python face_encoding_example_worker.py localhost 8000 1
+```
+(Last argument is the amount of threads to be spawned, on less powerful machines or when not working with huge amounts of images, this should be kept low)
+
+### 6. Creating the Face Recognition Model
+After all images have been processed, the value-vectors need to be combined in one model. This will be a representation of a 265-Dimension Space, which will serve as some kind of lookup-table for the identification of faces. 
+As the creation of the model can take very long, it is not done automatically. This means a face recognition request to heartbeat will fail, if you didnt train a model yet. You can train a model by going to http://heartbeat-host/admin. This is not advised for huge amounts of images, as the nginx *will* timeout. If you have large amounts of data, please use a script, which does the training by itself and then uploads the model to your Data storage. This script is still WIP and not published, which means heartbeat is currently unable to handle very large data amounts, but in the near future this will be fixed.
+
+### 7. Finished!
+If you completed all of the above steps, you are now able to use your heartbeat instace and start uploading images to it! Congratulations!
+
+## Flowcharts
+Some Flowcharts to show you how heartbeat works internally.
 ### Workers
 ![Heartbeat worker Phase 1](https://github.com/mowoe/heartbeat/raw/master/images/heartbeat_worker_first_step.png "Logo Title Text 1")
 
