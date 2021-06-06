@@ -1,10 +1,13 @@
 <html>
-    {% include "head.jinja" %}
-    <body>
-        <div class="main-container">
-            <h1>HEARTBEAT</h1>
-            <h5>Ein Fehler ist aufgetreten!</h5>
-            {{ errormessage }}
-        </div>
-    </body>
+{% include "head.jinja" %}
+
+<body>
+    <div class="main-container">
+        <h1>HEARTBEAT</h1>
+        <h5>Ein Fehler ist aufgetreten!</h5>
+        {{ errormessage }}
+    </div>
+    {% include "footer.jinja" %}
+</body>
+
 </html>

@@ -3,33 +3,31 @@
 
 <body>
     <script>
+
         function update() {
-            document.getElementById("file-name").textContent = document.getElementById("file-upload").files[0].name;
-            document.getElementById("file-name").style.visibility = "visible";
-            document.getElementById("file-name-box").style.visibility = "visible";
-        }  
+            document.getElementById("file-chosen").textContent = document.getElementById("actual-btn").files[0].name;
+        }
     </script>
-    <div class="main-container">
-        <h1>HEARTBEAT</h1>
-        <h5>Bild hochladen</h5>
-        <form method="post" action="/get_matching_images" enctype="multipart/form-data">
-            <div class="grbckgrnd">
-                <div class="fileUpload grbckgrnd">
-                    <span>Datei ausw&auml;hlen</span>
-                    <input onchange="update();" id="file-upload" class="upload" name="file" type="file" size="50"
-                        accept="image/*">
+    <div class="bckdiv">
+        <div class="main-container">
+            <h1>HEARTBEAT</h1>
+            <h5>Upload an Image</h5>
+            <form method="post" action="/get_matching_images" enctype="multipart/form-data">
+
+                <input onchange="update();" id="actual-btn" class="upload" name="file" type="file" size="50"
+                    accept="image/*" hidden />
+                <div class="grbckgrnd">
+                    <label class="grbutton" for="actual-btn">Choose file</label>
+                    <p style="margin: 10px; " id="file-chosen">No file chosen</p>
                 </div>
-                <div id="file-name-box" style="visibility: hidden;" class="fileUpload"> 
-                    File: <span id="file-name" style="visibility: hidden;" ></span>
+
+                <div class="grbckgrnd">
+                    <button class="grbutton">upload</button>
                 </div>
-            </div>
-            <div class="grbckgrnd">
-                <button class="grbutton">Hochladen</button>
-            </div>
-        </form>
-        <br><br>
-        Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde.
+            </form>
+        </div>
     </div>
+    {% include "footer.jinja" %}
 </body>
 
 </html>

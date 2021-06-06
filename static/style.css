@@ -69,7 +69,8 @@ body {
     width:80%;
     margin: auto;
     margin-top: 10px;
-    padding: 1px;
+    padding: 2px;
+    color: white;
 }
 
 .result_images {

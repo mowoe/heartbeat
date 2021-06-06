@@ -1,19 +1,22 @@
 <html>
     {% include "head.jinja" %}
     <body>
+        <div class="bckdiv">
         <div class="main-container">
             <h1>HEARTBEAT</h1>
-            <h5>Diese Seite ist nur zum Hochladen von Bildern für die Heartbeat Datenbank, du wirst also kein Ergebnis bekommen und das hochgeladene Bild kann anderen Besuchern anzeigeigt werden.</h5>
-            <form method="post" action="/upload_new" enctype="multipart/form-data">
-                <label>Bild auswählen (*.png, *.jpg usw.)
-                    <input name="file" type="file" size="50" accept="image/*"> 
-                </label>
+            <h5>This page is only used to upload new images onto heartbeats database!</h5>
+                <input onchange="update();" id="actual-btn" class="upload" name="file" type="file" size="50"
+                    accept="image/*" hidden />
                 <div class="grbckgrnd">
-                    <button class="grbutton" >Hochladen</button>
+                    <label class="grbutton" for="actual-btn">Choose file</label>
+                    <p style="margin: 10px; " id="file-chosen">No file chosen</p>
+                </div>
+                <div class="grbckgrnd">
+                    <button class="grbutton" >upload</button>
                 </div>
             </form>
-            <br><br>
-           Heartbeat ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde. 
         </div>
+    </div>
+        {% include "footer.jinja" %}
     </body>
 </html>
