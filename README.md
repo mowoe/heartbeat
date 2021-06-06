@@ -64,7 +64,7 @@ sudo docker run --name heartbeat \
                 -e OS_TYPE=local \
                 mowoe/heartbeat:latest
 ```
-Visit [localhost:5000](localhost:5000) to use the created heartbeat Instance.
+Visit [localhost:5000](http://localhost:5000) to use the created heartbeat Instance.
 ### 2a. Advanced 
 By default heartbeat stores all uploaded images inside of the container as plain files. This however can pose some problems: The files _will_ be deleted as soon as the docker container is deleted, which will render the whole heartbeat instance useless. To combat this, external storage is currently supported in the form of S3-compatible storage buckets (e.g. AWS, min.io).
 When using any object storage, please be aware, that the bucket _needs_ to be named `heartbeat`.
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 ### 3. Create a config File
 Create a new file, name it `heartbeat_conf.json` and add the following contents:
 ```json
-
+{
    "object_storage_type":"local",
    "db_type":"mysql",
    "db_auth":{
