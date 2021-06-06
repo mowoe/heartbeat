@@ -21,7 +21,7 @@ Heartbeat is a Face Recognition app, that you can upload Images to find more Ima
 5. Wait for the results.
 -->
 <p align="center">
-  <img src="https://github.com/mowoe/heartbeat/raw/master/images/use.gif"/>
+  <img src="https://github.com/mowoe/heartbeat/raw/master/images/new_site.png"/>
 </p>
 
 
