@@ -1,13 +1,10 @@
 .main-container {
     background-color: #F2F2F2;
-    box-shadow: 4px 4px 10px #BABABA;
     color: black;
     margin: auto;
-    margin-top: 20px;
     width: 750px;
     padding: 20px;
     border-radius: 10px;
-    margin-bottom: 10px;
 }
 
 @font-face {
@@ -41,7 +38,7 @@ body {
     background-color: white;
     color: white;
     line-height: 28px;
-  font-family: 'monoMMM', Fallback, sans-serif;
+   font-family: 'monoMMM', Fallback, sans-serif;
 }
 
 .grbutton {
@@ -57,6 +54,7 @@ body {
     margin-bottom: 3px;
     text-decoration: none;
     font-family: 'monoMMM';
+    text-transform: uppercase;
 }
 
 .grbutton:hover{
@@ -211,3 +209,24 @@ body {
     animation: movedown 1s;
 }
 
+.footer {
+    position: fixed;
+    bottom: 0;
+    margin-bottom: 20px;
+    left:50%;
+    transform: translateX(-50%);
+}
+
+.bckdiv {
+    background-color: dimgray; 
+    padding: 22px; 
+    border-radius: 10px;
+    width:fit-content;
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.spacing {
+    margin-bottom: 20px;
+}

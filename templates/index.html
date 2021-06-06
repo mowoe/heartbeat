@@ -1,24 +1,38 @@
 <html>
-    {% include "head.jinja" %}
-    <body>
-        <div class="main-container">
-            <h1 class="samaritan-text">HEARTBEAT</h1>
-        <div class="text-center">
-            <span id="typed" class="samaritan-text" style="text-transform: uppercase;"></span>
-            <div class="cursor ">
-            <div class="triangle-up center"></div>
+{% include "head.jinja" %}
+
+<body>
+    <div class="bckdiv">
+        <h1 class="samaritan-text">HEARTBEAT</h1> 
+        <div class="main-container spacing">
+            <div class="text-center">
+                <span id="typed" class="samaritan-text" style="text-transform: uppercase;"></span>
+                <div class="cursor ">
+                    <div class="triangle-up center"></div>
+                </div>
+                <div id="typed-strings" style="text-transform: uppercase;">
+                    <p>find people on images with their faces.</p>
+                    <p>start by uploading an image.</p>
+                </div>
             </div>
-            <div id="typed-strings" style="text-transform: uppercase;">
-            <p>find people on images with their faces.</p>
-            <p>start by uploading an image.</p>
+            <div class="grbckgrnd">
+                <a class="grbutton" href="/upload">START</a>
+            </div>
+            <br>
+            To find faces on an new image, press start.
+
         </div>
+        <div class="main-container">
+            You can also upload new images to the face database of heartbeat.
+            <br>
+            <br>
+            <div class="grbckgrnd">
+                <a class="grbutton" href="/upload_new">Upload new images</a>
+            </div>
+
         </div>
-        <div class="grbckgrnd">
-            <a class="grbutton" href="/upload">Start</a>
-        </div>
-        <br>
-        <a href="http://github.com/mowoe/heartbeat">Heartbeat</a> ist ein OpenSource-Projekt welches von <a href="https://mowoe.com">mowoe</a> entwickelt wurde. 
     </div>
-        
-    </body>
+    {% include "footer.jinja" %}
+</body>
+
 </html>
