@@ -215,3 +215,10 @@ class HeartbeatDB(object):
             "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
         )
         remotefile.safe_file()
+
+    def get_stats(self):
+        count_processed = self.Image.select().where(self.Image.face_rec_worked == True).count()
+        count_total = self.Image.select().count()
+        count_encodings = self.Results.select().where(self.Results.result != "{\"encoding\": []}").count()
+        print(count_processed,count_total,count_encodings)
+        return [count_processed,count_total,count_encodings]

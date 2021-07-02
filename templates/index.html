@@ -22,7 +22,7 @@
             To find faces on an new image, press start.
 
         </div>
-        <div class="main-container">
+        <div class="main-container spacing">
             You can also upload new images to the face database of heartbeat.
             <br>
             <br>
@@ -30,6 +30,13 @@
                 <a class="grbutton" href="/upload_new">Upload new images</a>
             </div>
             
+        </div>
+        <div class="main-container">
+            Statistics:
+            <br>
+            <span>Total Images: {{counts[1]}}</span><br>
+            <span>Total Processed: {{counts[0]}}</span><br>
+            <span class="w3-tag">Total found Faces: {{counts[2]}}</span>
         </div>
     </div>
     {% include "footer.jinja" %}
