@@ -260,7 +260,7 @@ def frontend_matching_images():
     if not d:
         return render_template(
             "error.html",
-            errormessage="There doesnt seem to be a trained model, not locally nor in the file storage. Please train a model first before using heartbeat."
+            errormessage="There doesnt seem to exist a trained model, not locally nor in the file storage. Please train a model first before using heartbeat by visiting /admin."
         )
     with open(model_path, "rb") as f:
         knn_clf = pickle.load(f)

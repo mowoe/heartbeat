@@ -1,13 +1,15 @@
 <html>
     {% include "head.jinja" %}
     <body>
+        <div class="bckdiv">
         <div class="main-container">
             <h1>HEARTBEAT</h1>
             <form action="/admin">
                 <input name="action" type="text" value="update_knn" style="visibility:hidden;">
-                <input name="login" type="submit" value="Alle Gesichtserkennungsmodelle updaten">
+                <input name="login" type="submit" value="Train a new model">
             </form>
         </div>
+    </div>
         {% include "footer.jinja" %}
     </body>
 </html>
