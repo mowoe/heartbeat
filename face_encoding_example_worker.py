@@ -38,6 +38,8 @@ args = parser.parse_args()
 host = args.host
 port = args.port
 num_threads = args.num_threads
+print(host,port,num_threads)
+
 class FaceRecThread(threading.Thread):
     def __init__(self, threadID, host):
         threading.Thread.__init__(self)
@@ -67,7 +69,8 @@ class FaceRecThread(threading.Thread):
             resp_json = resp.json()
             image_id = resp_json["status"]
             if "empty" == resp_json["reason"]:
-                print("empty")
+                #print("empty")
+                fname = ""
                 return
             fname = self.download_file(
                 "http://"
@@ -112,7 +115,8 @@ class FaceRecThread(threading.Thread):
                 "http://" + host + ":" + port + "/api/submit_work", data=data
             )
         finally:
-            os.remove(fname)
+            if os.path.isfile(fname):
+                os.remove(fname)
 
     def run(self):
         print("Thread {} starting...".format(self.threadID))
@@ -121,6 +125,7 @@ class FaceRecThread(threading.Thread):
                 self.get_work()
             except Exception as e:
                 print(e)
+            time.sleep(1)
 
 
 def monitor(threads):

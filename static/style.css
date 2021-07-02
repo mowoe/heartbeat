@@ -39,6 +39,9 @@ body {
     color: white;
     line-height: 28px;
    font-family: 'monoMMM', Fallback, sans-serif;
+   height: 100%;
+   margin-top: 0px;
+   padding: 10px;
 }
 
 .grbutton {
@@ -210,13 +213,6 @@ body {
     animation: movedown 1s;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    margin-bottom: 20px;
-    left:50%;
-    transform: translateX(-50%);
-}
 
 .bckdiv {
     background-color: dimgray; 
@@ -228,6 +224,19 @@ body {
     margin-bottom: 20px;
 }
 
+.footer {
+    box-shadow:5px 5px 5px 5px grey;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    margin: auto;
+    margin-bottom: 10px;
+}
+
+
 .spacing {
     margin-bottom: 20px;
+}
+
+.imgpreview {
+    border-radius: 1%;
+    margin: 10px;
 }

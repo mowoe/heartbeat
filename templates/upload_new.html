@@ -1,15 +1,28 @@
 <html>
     {% include "head.jinja" %}
     <body>
+        <script>
+
+            function update() {
+                document.getElementById("file-chosen").textContent = document.getElementById("actualbtn").files[0].name;
+                const [file] = actualbtn.files
+                if (file) {
+                    imgpreview.src = URL.createObjectURL(file)
+                    document.getElementById("imgpreview").style.width = "95%";
+                }
+            }
+        </script>
         <div class="bckdiv">
         <div class="main-container">
             <h1>HEARTBEAT</h1>
             <h5>This page is only used to upload new images onto heartbeats database!</h5>
-                <input onchange="update();" id="actual-btn" class="upload" name="file" type="file" size="50"
+            <form method="post" action="/upload_new" enctype="multipart/form-data">
+                <input onchange="update();" id="actualbtn" class="upload" name="file" type="file" size="50"
                     accept="image/*" hidden />
                 <div class="grbckgrnd">
-                    <label class="grbutton" for="actual-btn">Choose file</label>
+                    <label class="grbutton" for="actualbtn">Choose file</label>
                     <p style="margin: 10px; " id="file-chosen">No file chosen</p>
+                     <img style="width: 0%;"id="imgpreview" src="#" class="imgpreview" alt="" />
                 </div>
                 <div class="grbckgrnd">
                     <button class="grbutton" >upload</button>

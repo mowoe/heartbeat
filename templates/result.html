@@ -1,7 +1,9 @@
 <html>
     {% include "head.jinja" %}
     <body>
+        <div class="bckdiv">
         <div class="main-container">
+            
             <h1>HEARTBEAT</h1>
             <h5>Ergebnisse</h5>
             Für dein Gesicht haben wir folgende Bilder gefunden:
@@ -11,7 +13,7 @@
                     <img src="/api/download_image?image_id={{image.id}}" alt="result" class="result_image">
                     <div class="overlay">
                             <div class="matchtext">
-                            {{image.score}}
+                            Score: {{image.score}}
                             <br>
                             {% for label in image.labels %}
                                 <p><span class="w3-tag">{{label}}</span></p>
@@ -21,7 +23,7 @@
                 </div>
                 {% endfor %}
             </div>
-            
+        </div>
         </div>
         {% include "footer.jinja" %}
     </body>

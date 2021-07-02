@@ -5,7 +5,12 @@
     <script>
 
         function update() {
-            document.getElementById("file-chosen").textContent = document.getElementById("actual-btn").files[0].name;
+            document.getElementById("file-chosen").textContent = document.getElementById("actualbtn").files[0].name;
+            const [file] = actualbtn.files
+            if (file) {
+                imgpreview.src = URL.createObjectURL(file)
+                document.getElementById("imgpreview").style.width = "95%";
+            }
         }
     </script>
     <div class="bckdiv">
@@ -14,11 +19,14 @@
             <h5>Upload an Image</h5>
             <form method="post" action="/get_matching_images" enctype="multipart/form-data">
 
-                <input onchange="update();" id="actual-btn" class="upload" name="file" type="file" size="50"
+                <input onchange="update();" id="actualbtn" class="upload" name="file" type="file" size="50"
                     accept="image/*" hidden />
                 <div class="grbckgrnd">
-                    <label class="grbutton" for="actual-btn">Choose file</label>
+                    <label class="grbutton" for="actualbtn">Choose file</label>
                     <p style="margin: 10px; " id="file-chosen">No file chosen</p>
+                    <div st le="text-align: center;">
+                        <img style="width:0px;" id="imgpreview" src="#" class="imgpreview" alt="" />
+                    </div>  
                 </div>
 
                 <div class="grbckgrnd">

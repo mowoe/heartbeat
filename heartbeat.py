@@ -296,15 +296,20 @@ def frontend_matching_images():
         label = all_labels[closest_distances[1][0][x]]
         if score <= distance_threshold:
             labels = []
-            image = heartbeat_db.get_imgobj_from_id(label)
-            origin = image.origin
-            labels.append("origin: " + origin)
-            other_data = json.loads(image.other_data)
-            if type(other_data) != type(None):
-                for key in other_data:
-                    if len(str(other_data[key])) > 0:
-                        labels.append(key + ": " + str(other_data[key]))
-            res.append({"id": label, "score": str(score)[:5], "labels": labels})
+            try:
+                image = heartbeat_db.get_imgobj_from_id(label)
+                origin = image.origin
+                labels.append("origin: " + origin)
+                print(image.other_data)
+                other_data = json.loads(image.other_data)
+                if type(other_data) != type(None):
+                    for key in other_data:
+                        if len(str(other_data[key])) > 0:
+                            labels.append(key + ": " + str(other_data[key]))
+                res.append({"id": label, "score": str(score)[:5], "labels": labels})
+            except KeyError as e:
+                print(e)
+                return render_template("error.html", errormessage="Images which are existent in the database, dont seem to be existent in the file storage. {}".format(e))
 
     print(res)
     os.remove(file.filename)
