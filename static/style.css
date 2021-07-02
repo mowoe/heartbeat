@@ -242,4 +242,5 @@ body {
 .imgpreview {
     border-radius: 1%;
     margin: 10px;
+    text-align: center;
 }

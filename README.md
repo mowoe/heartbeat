@@ -152,7 +152,7 @@ python face_encoding_example_worker.py localhost 8000 1
 
 ### 6. Creating the Face Recognition Model
 After all images have been processed, the value-vectors need to be combined in one model. This will be a representation of a 265-Dimension Space, which will serve as some kind of lookup-table for the identification of faces. 
-As the creation of the model can take very long, it is not done automatically. This means a face recognition request to heartbeat will fail, if you didnt train a model yet. You can train a model by going to http://heartbeat-host/admin. This is not advised for huge amounts of images, as the nginx *will* timeout. If you have large amounts of data, please use a script, which does the training by itself and then uploads the model to your Data storage. This script is still WIP and not published, which means heartbeat is currently unable to handle very large data amounts, but in the near future this will be fixed.
+As the creation of the model can take very long, it is not done automatically. This means a face recognition request to heartbeat will fail, if you didnt train a model yet. You can train a model by going to http://heartbeat-host/admin. This is not advised for huge amounts of images, as the webserver *will* timeout. If you have large amounts of data, please use a script, which does the training by itself and then uploads the model to your Data storage. This script is still WIP and not published, which means heartbeat is currently unable to handle very large data amounts, but in the near future this will be fixed.
 
 ### 7. Finished!
 If you completed all of the above steps, you are now able to use your heartbeat instace and start uploading images to it! Congratulations!

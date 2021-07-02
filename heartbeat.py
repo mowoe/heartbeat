@@ -256,7 +256,12 @@ def upload_frontend():
 
 @app.route("/get_matching_images", methods=["POST"])
 def frontend_matching_images():
-    heartbeat_db.retrieve_model()
+    d = heartbeat_db.retrieve_model()
+    if not d:
+        return render_template(
+            "error.html",
+            errormessage="There doesnt seem to be a trained model, not locally nor in the file storage. Please train a model first before using heartbeat."
+        )
     with open(model_path, "rb") as f:
         knn_clf = pickle.load(f)
     file = request.files["file"]
@@ -285,9 +290,9 @@ def frontend_matching_images():
     with open("./trained_knn_list.clf", "rb") as f:
         all_labels = pickle.load(f)
     
-    print("Those are the IDs of found images:")
+    print("These are the IDs of found images:")
     print(closest_distances[1][0])
-    print("Those are the scores of the images found:")
+    print("These are the scores of the images found:")
     print(closest_distances[0][0])
     labels = [all_labels[i] for i in closest_distances[1][0]]
     print("Real Labels:\n{}".format(labels))

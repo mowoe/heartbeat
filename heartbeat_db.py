@@ -200,11 +200,17 @@ class HeartbeatDB(object):
         remotelist = StoredImage(
             "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
         )
-        remotelist.load_file()
         remotefile = StoredImage(
             "trained_knn_model.clf", self.object_storage_type, self.object_storage_auth
         )
-        remotefile.load_file()
+        try:
+            remotelist.load_file()
+            remotefile.load_file()
+            return 1
+        except FileNotFoundError:
+            return 0
+        
+        
 
     def safe_model(self):
         remotelist = StoredImage(
