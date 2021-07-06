@@ -1,1 +1,1 @@
-web: getenv && gunicorn -w 1 heartbeat:app
+web: env && gunicorn -w 1 heartbeat:app
