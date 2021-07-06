@@ -226,5 +226,4 @@ class HeartbeatDB(object):
         count_processed = self.Image.select().where(self.Image.face_rec_worked == True).count()
         count_total = self.Image.select().count()
         count_encodings = self.Results.select().where(self.Results.result != "{\"encoding\": []}").count()
-        print(count_processed,count_total,count_encodings)
         return [count_processed,count_total,count_encodings]
