@@ -67,7 +67,7 @@ sudo docker run --name heartbeat \
 Visit [localhost:5000](http://localhost:5000) to use the created heartbeat Instance.
 ### 2a. Advanced 
 By default heartbeat stores all uploaded images inside of the container as plain files. This however can pose some problems: The files _will_ be deleted as soon as the docker container is deleted, which will render the whole heartbeat instance useless. To combat this, external storage is currently supported in the form of S3-compatible storage buckets (e.g. AWS, min.io).
-When using any object storage, please be aware, that the bucket _needs_ to be named `heartbeat`.
+When using any object storage, please be aware, that the bucket _needs_ to be named `heartbeat-images`.
 1. To use Local space use the docker variable ```-e OS_TYPE=local```. 
 2. To use the AWS S3 Storage change it to ```-e OS_TYPE=s3```. 
     * You also need to specify: 
