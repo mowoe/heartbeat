@@ -11,40 +11,15 @@ import time
 import os
 import argparse
 
-verbose = True
 
-if not os.path.isfile("./config.json"):
-    first_run = True
-    if type(os.environ.get("HB_HOST")) == type(None):
-        print("No Host supplied!")
-        exit()
-    config = {"host": os.environ.get("HB_HOST"), "port": str(os.environ.get("HB_PORT"))}
-    with open("./config.json", "w") as f:
-        json.dump(config, f)
-
-with open("./config.json", "r") as f:
-    config = json.load(f)
-    host = config["host"]
-    port = config["port"]
-
-parser = argparse.ArgumentParser(description='Do Facerec stuff on heartbeat.')
-parser.add_argument('port', metavar='N', type=str,
-                     help='an integer for the accumulator')
-parser.add_argument('host', metavar='N', type=str,
-                     help='an integer for the accumulator')       
-parser.add_argument('num_threads', metavar='N', type=int,
-                     help='an integer for the accumulator')           
-args = parser.parse_args()
-host = args.host
-port = args.port
-num_threads = args.num_threads
-print(host,port,num_threads)
 
 class FaceRecThread(threading.Thread):
-    def __init__(self, threadID, host):
+    def __init__(self, threadID, host, port):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.counter = 0
+        self.host = host
+        self.port = port
 
     def download_file(self, url):
         try:
@@ -64,7 +39,7 @@ class FaceRecThread(threading.Thread):
     def get_work(self):
         try:
             resp = requests.get(
-                "http://" + host + ":" + port + "/api/request_work?work_type=face_encodings"
+                "http://" + self.host + ":" + self.port + "/api/request_work?work_type=face_encodings"
             )
             resp_json = resp.json()
             image_id = resp_json["status"]
@@ -74,7 +49,7 @@ class FaceRecThread(threading.Thread):
                 return
             fname = self.download_file(
                 "http://"
-                + host
+                + self.host
                 + ":"
                 + port
                 + "/api/download_image?image_id="
@@ -90,7 +65,7 @@ class FaceRecThread(threading.Thread):
                     "result": json.dumps(face_encoding),
                 }
                 resp = requests.post(
-                    "http://" + host + ":" + port + "/api/submit_work", data=data
+                    "http://" + self.host + ":" + port + "/api/submit_work", data=data
                 )
             else:
                 face_encoding = {"encoding": []}
@@ -100,7 +75,7 @@ class FaceRecThread(threading.Thread):
                     "result": json.dumps(face_encoding),
                 }
                 resp = requests.post(
-                    "http://" + host + ":" + port + "/api/submit_work", data=data
+                    "http://" + self.host + ":" + self.port + "/api/submit_work", data=data
                 )
             self.counter += 1
         except Exception as e:
@@ -112,7 +87,7 @@ class FaceRecThread(threading.Thread):
                 "result": json.dumps(face_encoding),
             }
             resp = requests.post(
-                "http://" + host + ":" + port + "/api/submit_work", data=data
+                "http://" + self.host + ":" + self.port + "/api/submit_work", data=data
             )
         finally:
             if os.path.isfile(fname):
@@ -147,9 +122,38 @@ def monitor(threads):
 
 
 if __name__ == "__main__":
+    verbose = True
+
+    if not os.path.isfile("./config.json"):
+        first_run = True
+        if type(os.environ.get("HB_HOST")) == type(None):
+            print("No Host supplied!")
+            exit()
+        config = {"host": os.environ.get("HB_HOST"), "port": str(os.environ.get("HB_PORT"))}
+        with open("./config.json", "w") as f:
+            json.dump(config, f)
+
+    with open("./config.json", "r") as f:
+        config = json.load(f)
+        host = config["host"]
+        port = config["port"]
+
+    parser = argparse.ArgumentParser(description='Do Facerec stuff on heartbeat.')
+    parser.add_argument('port', metavar='N', type=str,
+                        help='an integer for the accumulator')
+    parser.add_argument('host', metavar='N', type=str,
+                        help='an integer for the accumulator')       
+    parser.add_argument('num_threads', metavar='N', type=int,
+                        help='an integer for the accumulator')           
+    args = parser.parse_args()
+    host = args.host
+    port = args.port
+    num_threads = args.num_threads
+    print(host,port,num_threads)
+
     threads = []
     for x in range(num_threads):
-        thread = FaceRecThread(x, host)
+        thread = FaceRecThread(x, host, port)
         thread.start()
         threads.append(thread)
     monitor(threads)

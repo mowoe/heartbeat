@@ -1,1 +1,1 @@
-web: gunicorn -w 1 heartbeat:app
+web: gunicorn -w 2 heartbeat:app

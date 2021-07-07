@@ -130,8 +130,9 @@ def add_image_file():
         new_filename = str(time_hash) + ".png"
         file = request.files["file"]
         file.save(os.path.join(UPLOAD_FOLDER, new_filename))
+        print(information)
         information = json.loads(information)
-        information = json.dumps(information)
+        print(information)
         heartbeat_db.upload_file(new_filename, origin, information)
         return constr_resp("success")
     except peewee.InterfaceError as e:
@@ -308,8 +309,10 @@ def frontend_matching_images():
                 labels.append("origin: " + origin)
                 print(image.other_data)
                 other_data = json.loads(image.other_data)
+                print(image.other_data, type(image.other_data))
                 if type(other_data) != type(None):
                     for key in other_data:
+                        print(key, other_data)
                         if len(str(other_data[key])) > 0:
                             labels.append(key + ": " + str(other_data[key]))
                 res.append({"id": label, "score": str(score)[:5], "labels": labels})
