@@ -11,6 +11,7 @@
                 {% for image in images %}
                 <div class="oresult">
                     <img src="/api/download_image?image_id={{image.id}}" alt="result" class="result_image">
+                    <a href="/api/download_image?image_id={{image.id}}">
                     <div class="overlay">
                             <div class="matchtext">
                             Score: {{image.score}}
@@ -19,7 +20,7 @@
                                 <p><span class="w3-tag">{{label}}</span></p>
                             {% endfor %}
                             </div>
-                        </div>                    
+                        </div></a>                 
                 </div>
                 {% endfor %}
             </div>
