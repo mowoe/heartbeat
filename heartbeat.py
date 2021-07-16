@@ -1,6 +1,6 @@
 from flask import Flask
-from flask import request, make_response
-from flask import send_file, render_template, redirect
+from flask import request, make_response, url_for
+from flask import send_file, render_template, redirect, send_from_directory
 import hashlib
 from werkzeug.utils import secure_filename
 import time
@@ -60,6 +60,10 @@ def allowed_file(filename):
 def constr_resp(status, reason="healthy"):
     return json.dumps({"status": status, "reason": reason})
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.before_request
 def _db_connect():
