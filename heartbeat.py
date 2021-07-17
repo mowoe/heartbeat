@@ -369,6 +369,9 @@ def admin_panel():
                     pickle.dump(y, f)
                 heartbeat_db.safe_model()
                 print(task.ready())
+            if action == "delete_empty":
+                print("Deleting all images with no faces detected on.")
+                heartbeat_db.delete_empty()
         except peewee.InterfaceError as e:
             print("PeeWee Interface broken!")
             mysql_db = heartbeat_db.init_db(

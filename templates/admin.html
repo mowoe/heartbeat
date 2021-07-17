@@ -8,6 +8,11 @@
                 <input name="action" type="text" value="update_knn" style="visibility:hidden;">
                 <input name="login" type="submit" value="Train a new model">
             </form>
+            <br>
+            <form action="/admin">
+                <input name="action" type="text" value="delete_empty" style="visibility:hidden;">
+                <input name="login" type="submit" value="Delete all empty pictures">
+            </form>
         </div>
     </div>
         {% include "footer.jinja" %}

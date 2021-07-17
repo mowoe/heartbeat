@@ -1,7 +1,8 @@
 import peewee
 import requests
-from peewee import MySQLDatabase, SqliteDatabase
+from peewee import MySQLDatabase, SqliteDatabase, JOIN
 from peewee import CharField, ForeignKeyField, DateTimeField, fn, BooleanField, TimestampField
+import os
 import peewee
 import boto3
 from flask import send_file
@@ -96,12 +97,19 @@ class StoredImage(object):
             copyfile(self.filename, os.path.join("./heartbeat-images", self.filename.split("/")[-1]))
 
     def remove_file(self):
+        print("Deleting {}".format(self.filename))
         if self.object_storage_type == "openstack":
-            swift_client = swiftclient.client.Connection(
-                os_options=options, **self.object_storage_auth
-            )
+            raise NotImplementedError
             
-            swift_client.close()
+        elif self.object_storage_type == "s3":
+            print(self.filename)
+            delete = self.s3_client.delete_object(Bucket=bucket, Key=self.filename)
+            print(delete)
+
+            
+        elif self.object_storage_type == "local":
+            os.remove(os.path.join("./heartbeat-images", self.filename))
+        print("removed {}".format(self.filename))
 
     def load_file(self):
         if self.object_storage_type == "openstack":
@@ -120,6 +128,21 @@ class StoredImage(object):
         elif self.object_storage_type == "local":
             copyfile(os.path.join("./heartbeat-images", self.filename.split("/")[-1]),os.path.join(".",self.filename))
 
+    def get_all_files(self):
+        if self.object_storage_type == "openstack":
+            raise NotImplementedError
+        elif self.object_storage_type == "s3":
+            files = []
+            for key in self.s3_client.list_objects(Bucket=bucket)['Contents']:
+                files.append(key["Key"])
+            return files
+
+        elif self.object_storage_type == "local":
+            files = [] 
+            for f in os.listdir("./heartbeat-images"):
+                if os.path.isfile(os.path.join("./heartbeat-images",f)):
+                    files.append(f)
+            return files
 
     def delete_locally(self):
         os.remove(self.filename)
@@ -227,3 +250,26 @@ class HeartbeatDB(object):
         count_total = self.Image.select().count()
         count_encodings = self.Results.select().where(self.Results.result != "{\"encoding\": []}").count()
         return [count_processed,count_total,count_encodings]
+
+    def delete_empty(self):
+        res = self.Results.delete().where(self.Results.result=="{\"encoding\": []}").execute()
+        print("Deleted {} empty encodings.".format(res))
+        query = self.Image.select().join(self.Results, JOIN.LEFT_OUTER, on=self.Image.id==self.Results.image_id).where(self.Results.image_id.is_null())
+        print(query)
+        for image in query:
+            print(image.id, image.filename, image.face_rec_worked)
+            if image.face_rec_worked:
+                stored_image = StoredImage(
+                    image.filename, self.object_storage_type, self.object_storage_auth
+                )
+                stored_image.remove_file()
+                image.delete_instance()
+        print("Checking if DB and filestorage are in sync...")
+        stored_image = StoredImage("dummyfile", self.object_storage_type,self.object_storage_auth)
+        files = stored_image.get_all_files()
+        for f in files:
+            hits = self.Image.select().where(self.Image.filename==f).count()
+            if hits < 1:
+                print("File {} was not found in db".format(f))
+            else:
+                print("File {} was found in db".format(f))
