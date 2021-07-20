@@ -38,19 +38,17 @@ class FaceRecThread(threading.Thread):
         self.q = q
 
     def download_file(self, url):
-        try:
-            hash_object = hashlib.sha256(str(time.time()).encode())
-            hex_dig = hash_object.hexdigest()
-            local_filename = str(hex_dig) + ".png"
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()
-                with open(local_filename, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-            return local_filename
-        except Exception as e:
-            print(e)
+        hash_object = hashlib.sha256(str(time.time()).encode())
+        hex_dig = hash_object.hexdigest()
+        local_filename = str(hex_dig) + ".png"
+        with requests.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(local_filename, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+        return local_filename
+
 
     def get_work(self):
         try:
@@ -111,10 +109,7 @@ class FaceRecThread(threading.Thread):
     def run(self):
         print("Thread {} starting...".format(self.threadID))
         while True:
-            try:
-                self.get_work()
-            except Exception as e:
-                print(e)
+            self.get_work()
             time.sleep(1)
 
 
