@@ -33,8 +33,8 @@ Heartbeat needs a MySQL(-compatible) Database to store its faces and images. You
 If you want to create the Database yourself or already have a mysql/mariadb instance running you can use this code:
 ```sql
 CREATE DATABASE heartbeat;
-CREATE USER 'heartbeat'@'localhost' IDENTIFIED BY 'heartbeat';
-GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'localhost';
+CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';
+GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'%';
 FLUSH PRIVILEGES;
 ```
 **OR**
@@ -103,8 +103,8 @@ Heartbeat needs a MySQL(-compatible) Database to store its faces and images. You
 Startup a e.g. mariadb (compatible) server and execute the following sql code:
 ```sql
 CREATE DATABASE heartbeat;
-CREATE USER 'heartbeat'@'localhost' IDENTIFIED BY 'heartbeat';
-GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'localhost';
+CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';
+GRANT ALL PRIVILEGES ON heartbeat.* TO 'heartbeat'@'%';
 FLUSH PRIVILEGES;
 ```
 ### 2. Heartbeat

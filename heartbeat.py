@@ -137,8 +137,8 @@ def add_image_file():
         print(information)
         information = json.loads(information)
         print(information)
-        heartbeat_db.upload_file(new_filename, origin, information)
-        return constr_resp("success")
+        res = heartbeat_db.upload_file(new_filename, origin, information)
+        return constr_resp(res)
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
         mysql_db = heartbeat_db.init_db(

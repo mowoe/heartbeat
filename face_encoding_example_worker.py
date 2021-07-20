@@ -10,16 +10,32 @@ import hashlib
 import time
 import os
 import argparse
+import queue
+import tqdm
 
+
+def replenish_queue(queue, host, port):
+    print("replenishing queue...")
+    for x in tqdm.tqdm(range(50)):
+        resp = requests.get(
+                "http://" + host + ":" + port + "/api/request_work?work_type=face_encodings"
+            )
+        resp_json = resp.json()
+        image_id = resp_json["status"]
+        if "empty" == resp_json["reason"]:
+            #queue.put_nowait("empty")
+            break
+        queue.put_nowait(image_id)
 
 
 class FaceRecThread(threading.Thread):
-    def __init__(self, threadID, host, port):
+    def __init__(self, q, threadID, host, port):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.counter = 0
         self.host = host
         self.port = port
+        self.q = q
 
     def download_file(self, url):
         try:
@@ -38,15 +54,13 @@ class FaceRecThread(threading.Thread):
 
     def get_work(self):
         try:
-            resp = requests.get(
-                "http://" + self.host + ":" + self.port + "/api/request_work?work_type=face_encodings"
-            )
-            resp_json = resp.json()
-            image_id = resp_json["status"]
-            if "empty" == resp_json["reason"]:
-                #print("empty")
-                fname = ""
+            try:
+                image_id = self.q.get(timeout=3)  # 3s timeout
+                print(image_id)
+            except queue.Empty:
                 return
+            # do whatever work you have to do on work
+            
             fname = self.download_file(
                 "http://"
                 + self.host
@@ -78,6 +92,7 @@ class FaceRecThread(threading.Thread):
                     "http://" + self.host + ":" + self.port + "/api/submit_work", data=data
                 )
             self.counter += 1
+            self.q.task_done()
         except Exception as e:
             print(e)
             face_encoding = {"encoding": []}
@@ -103,10 +118,12 @@ class FaceRecThread(threading.Thread):
             time.sleep(1)
 
 
-def monitor(threads):
+def monitor(q, host, port, threads):
     start = time.time()
     time.sleep(5)
     while True:
+        if q.qsize() < 40:
+            replenish_queue(q,host,port)
         all_sums = 0
         for thread in threads:
             all_sums += thread.counter
@@ -122,38 +139,19 @@ def monitor(threads):
 
 
 if __name__ == "__main__":
-    verbose = True
-
-    if not os.path.isfile("./config.json"):
-        first_run = True
-        if type(os.environ.get("HB_HOST")) == type(None):
-            print("No Host supplied!")
-            exit()
-        config = {"host": os.environ.get("HB_HOST"), "port": str(os.environ.get("HB_PORT"))}
-        with open("./config.json", "w") as f:
-            json.dump(config, f)
-
-    with open("./config.json", "r") as f:
-        config = json.load(f)
-        host = config["host"]
-        port = config["port"]
-
-    parser = argparse.ArgumentParser(description='Do Facerec stuff on heartbeat.')
-    parser.add_argument('port', metavar='N', type=str,
-                        help='an integer for the accumulator')
-    parser.add_argument('host', metavar='N', type=str,
-                        help='an integer for the accumulator')       
-    parser.add_argument('num_threads', metavar='N', type=int,
-                        help='an integer for the accumulator')           
-    args = parser.parse_args()
-    host = args.host
-    port = args.port
-    num_threads = args.num_threads
+    host = "heartbeat-pve"
+    port = str(8000)
+    num_threads = 1
     print(host,port,num_threads)
+    q = queue.Queue()
+
+    replenish_queue(q,host,port)
 
     threads = []
+    
     for x in range(num_threads):
-        thread = FaceRecThread(x, host, port)
+        thread = FaceRecThread(q, x, host, port)
         thread.start()
         threads.append(thread)
-    monitor(threads)
+    
+    monitor(q, host, port, threads)

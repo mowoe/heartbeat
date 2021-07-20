@@ -168,7 +168,7 @@ class HeartbeatDB(object):
         file_hash = hash_file(path)
         for result in self.Image.select().where(self.Image.file_hash==file_hash).execute():
             print("Duplicate: {}!".format(file_hash))
-            return #An Image with the same hash is already in the database.
+            return "duplicate"#An Image with the same hash is already in the database.
         other_data = json.dumps(other_data)
         image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
         print("Uploaded to DB.")
@@ -179,6 +179,7 @@ class HeartbeatDB(object):
         print("Uploaded to Object Storage.")
         stored_image.safe_file()
         stored_image.delete_locally()
+        return success
 
     def get_file(self, image_id):
         filename = self.Image.select().where(self.Image.id == image_id).get().filename
@@ -198,7 +199,7 @@ class HeartbeatDB(object):
         return results
 
     def request_work(self, work_type):
-        query = self.Image.select().where(self.Image.face_rec_worked == False).limit(60)
+        query = self.Image.select().where(self.Image.face_rec_worked == False).order_by(peewee.fn.Rand()).limit(60)
         results = []
         for x in query:
             results.append(x.id)
