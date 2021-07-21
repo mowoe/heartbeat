@@ -20,6 +20,7 @@ import sys
 import peewee
 import read_config
 from threading import Thread
+from flask import g
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -67,12 +68,15 @@ def favicon():
 
 @app.before_request
 def _db_connect():
+    g.start = time.time()
     if heartbeat_config.config["db_type"] == "mysql":
         mysql_db.connect()
 
 
 @app.teardown_request
 def _db_close(exc):
+    diff = time.time() - g.start
+    print("This request took {} seconds".format(diff))
     if heartbeat_config.config["db_type"] == "mysql":
         if not mysql_db.is_closed():
             mysql_db.close()
@@ -174,7 +178,7 @@ def submit_work():
     img_id = request.form.get("image_id")
     resulted = request.form.get("result")
     heartbeat_db.submit_work(work_type, img_id, resulted)
-    print("submit work took {} seconds".format(time.time() - start))
+    print("Saving the submitted work took {} seconds".format(time.time() - start))
     return constr_resp("success")
 
 

@@ -16,6 +16,7 @@ import swiftclient
 from swiftclient.exceptions import ClientException
 import hashlib
 from shutil import copyfile
+import tqdm
 
 bucket = "heartbeat-images"
 object_storage_auth = ""
@@ -63,7 +64,7 @@ class StoredImage(object):
         self.just_name = self.filename.split("/")[-1]
         if self.object_storage_type == "s3":
             self.s3_client = boto3.client("s3", **object_storage_auth)
-            print("established s3 connection!")
+            #print("established s3 connection!")
         elif self.object_storage_type == "local":
             if not os.path.exists("./heartbeat-images"):
                 os.makedirs("./heartbeat-images")
@@ -97,19 +98,19 @@ class StoredImage(object):
             copyfile(self.filename, os.path.join("./heartbeat-images", self.filename.split("/")[-1]))
 
     def remove_file(self):
-        print("Deleting {}".format(self.filename))
+        #print("Deleting {}".format(self.filename))
         if self.object_storage_type == "openstack":
             raise NotImplementedError
             
         elif self.object_storage_type == "s3":
-            print(self.filename)
+            #print(self.filename)
             delete = self.s3_client.delete_object(Bucket=bucket, Key=self.filename)
-            print(delete)
+            #print(delete)
 
             
         elif self.object_storage_type == "local":
             os.remove(os.path.join("./heartbeat-images", self.filename))
-        print("removed {}".format(self.filename))
+        #print("removed {}".format(self.filename))
 
     def load_file(self):
         if self.object_storage_type == "openstack":
@@ -257,8 +258,8 @@ class HeartbeatDB(object):
         print("Deleted {} empty encodings.".format(res))
         query = self.Image.select().join(self.Results, JOIN.LEFT_OUTER, on=self.Image.id==self.Results.image_id).where(self.Results.image_id.is_null())
         print(query)
-        for image in query:
-            print(image.id, image.filename, image.face_rec_worked)
+        for image in tqdm.tqdm(query):
+            #print(image.id, image.filename, image.face_rec_worked)
             if image.face_rec_worked:
                 stored_image = StoredImage(
                     image.filename, self.object_storage_type, self.object_storage_auth

@@ -12,10 +12,15 @@ import os
 import argparse
 import queue
 import tqdm
+import faulthandler
 
+faulthandler.enable()
+queueLock = threading.Lock()
 
 def replenish_queue(queue, host, port):
     print("replenishing queue...")
+    queueLock.acquire()
+    img_ids = []
     for x in tqdm.tqdm(range(50)):
         resp = requests.get(
                 "http://" + host + ":" + port + "/api/request_work?work_type=face_encodings"
@@ -25,17 +30,44 @@ def replenish_queue(queue, host, port):
         if "empty" == resp_json["reason"]:
             #queue.put_nowait("empty")
             break
-        queue.put_nowait(image_id)
+        img_ids.append(image_id)
+    for image_id in tqdm.tqdm(img_ids):    
+        queue.put(image_id)
+    queueLock.release()
+
+
+class Submitter(threading.Thread):
+    def __init__(self,submit_queue,host,port):
+        self.submit_queue = submit_queue
+        self.host = host
+        self.port = port
+        threading.Thread.__init__(self)
+    
+    def work(self):
+        try:
+            data = self.submit_queue.get(timeout=3)
+        except queue.Empty:
+            return
+        work_type = data["work_type"]
+        if work_type == "face_encodings":
+            resp = requests.post("http://{}:{}/api/submit_work".format(self.host,self.port),data=data)
+            print(resp.text)
+
+    def run(self):
+        print("Submitter thread starting...")
+        while True:
+            self.work()
 
 
 class FaceRecThread(threading.Thread):
-    def __init__(self, q, threadID, host, port):
+    def __init__(self, q, threadID, host, port, submit_queue):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.counter = 0
         self.host = host
         self.port = port
         self.q = q
+        self.submit_queue = submit_queue
 
     def download_file(self, url):
         hash_object = hashlib.sha256(str(time.time()).encode())
@@ -48,60 +80,43 @@ class FaceRecThread(threading.Thread):
                     if chunk:
                         f.write(chunk)
         return local_filename
+    
 
 
     def get_work(self):
+        if queueLock.locked():
+            time.sleep(5)
+            return
         try:
             try:
-                image_id = self.q.get(timeout=3)  # 3s timeout
-                print(image_id)
+                image_id = self.q.get(timeout=3)  
             except queue.Empty:
                 return
-            # do whatever work you have to do on work
-            
-            fname = self.download_file(
-                "http://"
-                + self.host
-                + ":"
-                + port
-                + "/api/download_image?image_id="
-                + str(image_id)
-            )
+
+            fname = self.download_file("http://{}:{}/api/download_image?image_id={}".format(self.host,self.port,image_id))
+
             image = face_recognition.load_image_file(fname)
             face_locations = face_recognition.face_encodings(image)
+
+            
+
             for location in face_locations:
                 face_encoding = {"encoding": list(location)}
-                data = {
-                    "image_id": str(image_id),
+                self.submit_queue.put({
                     "work_type": "face_encodings",
-                    "result": json.dumps(face_encoding),
-                }
-                resp = requests.post(
-                    "http://" + self.host + ":" + port + "/api/submit_work", data=data
-                )
+                    "image_id": str(image_id),
+                    "result":json.dumps(face_encoding)
+                })                
             else:
                 face_encoding = {"encoding": []}
-                data = {
-                    "image_id": str(image_id),
+                self.submit_queue.put({
                     "work_type": "face_encodings",
-                    "result": json.dumps(face_encoding),
-                }
-                resp = requests.post(
-                    "http://" + self.host + ":" + self.port + "/api/submit_work", data=data
-                )
+                    "image_id": str(image_id),
+                    "result":json.dumps(face_encoding)
+                })   
+            
             self.counter += 1
             self.q.task_done()
-        except Exception as e:
-            print(e)
-            face_encoding = {"encoding": []}
-            data = {
-                "image_id": str(image_id),
-                "work_type": "face_encodings",
-                "result": json.dumps(face_encoding),
-            }
-            resp = requests.post(
-                "http://" + self.host + ":" + self.port + "/api/submit_work", data=data
-            )
         finally:
             if os.path.isfile(fname):
                 os.remove(fname)
@@ -110,7 +125,6 @@ class FaceRecThread(threading.Thread):
         print("Thread {} starting...".format(self.threadID))
         while True:
             self.get_work()
-            time.sleep(1)
 
 
 def monitor(q, host, port, threads):
@@ -139,14 +153,18 @@ if __name__ == "__main__":
     num_threads = 1
     print(host,port,num_threads)
     q = queue.Queue()
-
     replenish_queue(q,host,port)
+
+    submit_queue = queue.Queue()
+    submitter = Submitter(submit_queue,host,port)
 
     threads = []
     
     for x in range(num_threads):
-        thread = FaceRecThread(q, x, host, port)
+        thread = FaceRecThread(q, x, host, port, submit_queue)
         thread.start()
         threads.append(thread)
     
+    submitter.start()
+
     monitor(q, host, port, threads)
