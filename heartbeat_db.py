@@ -231,9 +231,9 @@ class HeartbeatDB(object):
         try:
             remotelist.load_file()
             remotefile.load_file()
-            return 1
-        except FileNotFoundError:
             return 0
+        except FileNotFoundError:
+            return 1
         
         
 
@@ -275,3 +275,12 @@ class HeartbeatDB(object):
                 print("File {} was not found in db".format(f))
             else:
                 print("File {} was found in db".format(f))
+
+    def check_operational(self):
+        cp, ct, ce = self.get_stats()
+        not_operational = ce <= 5
+        ms = self.retrieve_model()
+        if not not_operational: 
+            not_operational = ms
+
+        return not_operational

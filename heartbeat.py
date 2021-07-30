@@ -255,7 +255,8 @@ def get_matching_images():
 @app.route("/")
 def main():
     counts = heartbeat_db.get_stats()
-    return render_template("index.html", counts=counts)
+    not_operational = heartbeat_db.check_operational()
+    return render_template("index.html", not_operational=not_operational, counts=counts)
 
 
 @app.route("/upload")
