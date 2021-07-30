@@ -267,7 +267,7 @@ def upload_frontend():
 @app.route("/get_matching_images", methods=["POST"])
 def frontend_matching_images():
     d = heartbeat_db.retrieve_model()
-    if not d:
+    if d:
         return render_template(
             "error.html",
             errormessage="There doesnt seem to exist a trained model, not locally nor in the file storage. Please train a model first before using heartbeat by visiting /admin."
