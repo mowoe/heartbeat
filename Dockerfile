@@ -1,6 +1,7 @@
-FROM mowoe/ngface:latest
+FROM tiangolo/uwsgi-nginx-flask
 RUN apt update
 RUN apt install -y cmake
+RUN pip install face_recognition
 COPY ./requirements.txt /app/requirements.txt
 RUN pip install -r /app/requirements.txt
 RUN mkdir /app/uploaded_pics
