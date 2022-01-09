@@ -16,5 +16,5 @@ install:
   - sleep 5
   - docker logs heartbeat
 
-script: docker logs heartbeat -f & pip install requests && pip install pillow && python tests/endpoint_test.py && sh build_and_push
+script: docker logs heartbeat -f & pip install requests && pip install pillow && python tests/endpoint_test.py && sh build_and_push.sh
 
