@@ -1,0 +1,29 @@
+<html>
+    {% include "head.jinja" %}
+    <body>
+        <div class="bckdiv">
+        <div class="main-container">
+            <h1>HEARTBEAT</h1>
+            <h5>Thank You!</h5>
+            
+            {% if success ==true %}
+            <h6>Success!</h6>
+            <h6>Assigned ID: {{ id }}</h6>
+            <h6>Permalink:</h6>
+            <a href="{{link}}">{{link}}</a>
+            {% else %}
+            <h6>An Error has occured:</h6>
+            {{ message }}
+            {% endif %}
+            <br>
+            <form method="get" action="/" enctype="multipart/form-data">
+                <div class="grbckgrnd">
+                <button class="grbutton">Home</button>
+            </div>
+            </form>
+            <br>
+        </div>
+    </div>
+        {% include "footer.jinja" %}
+    </body>
+</html>

@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request, make_response, url_for
-from flask import send_file, render_template, redirect, send_from_directory 
+from flask import send_file, render_template, redirect, send_from_directory
 import hashlib
 from werkzeug.utils import secure_filename
 import time
@@ -21,6 +21,7 @@ import peewee
 import read_config
 from threading import Thread
 from flask import g
+import flask_monitoringdashboard as dashboard
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -45,13 +46,15 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
+dashboard.config.init_from(file='./dash_cfg.cfg')
+dashboard.bind(app)
 
 try:
     os.mkdir(UPLOAD_FOLDER)
 except OSError:
-    print ("Creation of the directory {} failed".format(UPLOAD_FOLDER))
+    print("Creation of the directory {} failed".format(UPLOAD_FOLDER))
 else:
-    print ("Successfully created the directory {}".format(UPLOAD_FOLDER))
+    print("Successfully created the directory {}".format(UPLOAD_FOLDER))
 
 
 def allowed_file(filename):
@@ -61,10 +64,16 @@ def allowed_file(filename):
 def constr_resp(status, reason="healthy"):
     return json.dumps({"status": status, "reason": reason})
 
+
+def constr_resp_html(status, reason="healthy"):
+    return render_template("constrresp.html", reason=reason, result=status)
+
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 
 @app.before_request
 def _db_connect():
@@ -75,8 +84,8 @@ def _db_connect():
 
 @app.teardown_request
 def _db_close(exc):
-    diff = time.time() - g.start
-    print("This request took {} seconds".format(diff))
+    #diff = time.time() - g.start
+    #print("This request took {} seconds".format(diff))
     if heartbeat_config.config["db_type"] == "mysql":
         if not mysql_db.is_closed():
             mysql_db.close()
@@ -101,15 +110,16 @@ def add_image():
         new_filename = str(time_hash) + fend
         print("Downloading Image {}...".format(img_url))
         s = time.time()
-        urllib.request.urlretrieve(img_url, os.path.join(UPLOAD_FOLDER, new_filename))
+        urllib.request.urlretrieve(
+            img_url, os.path.join(UPLOAD_FOLDER, new_filename))
         print("Downloading took {} seconds".format(str(time.time()-s)))
         information = json.loads(information)
         information = json.dumps(information)
         print("Uploading to DB and OS...")
         s = time.time()
-        heartbeat_db.upload_file(new_filename, origin, information)
+        res = heartbeat_db.upload_file(new_filename, origin, information)
         print("Uploading to DB took {} seconds".format(str(time.time()-s)))
-        return constr_resp("success")
+        return constr_resp(res['status'], res['message'])
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
         mysql_db = heartbeat_db.init_db(
@@ -142,7 +152,7 @@ def add_image_file():
         information = json.loads(information)
         print(information)
         res = heartbeat_db.upload_file(new_filename, origin, information)
-        return constr_resp(res)
+        return constr_resp(res["status"], res["message"])
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
         mysql_db = heartbeat_db.init_db(
@@ -160,6 +170,7 @@ def add_image_file():
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
         )
+
 
 @app.route("/api/request_work", methods=["GET"])
 def request_work():
@@ -227,7 +238,8 @@ def get_matching_images():
             [
                 (pred, loc) if rec else ("unknown", loc)
                 for pred, loc, rec in zip(
-                    knn_clf.predict(faces_encodings), x_face_locations, are_matches
+                    knn_clf.predict(
+                        faces_encodings), x_face_locations, are_matches
                 )
             ]
         )
@@ -245,7 +257,8 @@ def get_matching_images():
             "result": [
                 (pred, loc) if rec else ("unknown", loc)
                 for pred, loc, rec in zip(
-                    knn_clf.predict(faces_encodings), x_face_locations, are_matches
+                    knn_clf.predict(
+                        faces_encodings), x_face_locations, are_matches
                 )
             ]
         }
@@ -254,9 +267,8 @@ def get_matching_images():
 
 @app.route("/")
 def main():
-    counts = heartbeat_db.get_stats()
-    not_operational = heartbeat_db.check_operational()
-    return render_template("index.html", not_operational=not_operational, counts=counts)
+
+    return render_template("index.html")
 
 
 @app.route("/upload")
@@ -299,7 +311,7 @@ def frontend_matching_images():
     )
     with open("./trained_knn_list.clf", "rb") as f:
         all_labels = pickle.load(f)
-    
+
     print("These are the IDs of found images:")
     print(closest_distances[1][0])
     print("These are the scores of the images found:")
@@ -324,7 +336,8 @@ def frontend_matching_images():
                         print(key, other_data)
                         if len(str(other_data[key])) > 0:
                             labels.append(key + ": " + str(other_data[key]))
-                res.append({"id": label, "score": str(score)[:5], "labels": labels})
+                res.append({"id": label, "score": str(
+                    score)[:5], "labels": labels})
             except KeyError as e:
                 print(e)
                 return render_template("error.html", errormessage="Images which are existent in the database, dont seem to be existent in the file storage. {}".format(e))
@@ -334,11 +347,12 @@ def frontend_matching_images():
     return render_template("result.html", images=res)
 
 
-@app.route("/delete",methods=["POST"])
+@app.route("/delete", methods=["POST"])
 def delete_file():
     imgid = request.args.get("image_id")
     resp = heartbeat_db.get_file(imgid)
     return render_template("success.html")
+
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():
@@ -348,7 +362,7 @@ def admin_panel():
             if action == "update_knn":
                 print("Starting")
                 print("Started Thread!")
-                X,y = [], []
+                X, y = [], []
                 counter = 0
                 work_type = "face_encodings"
                 results = heartbeat_db.get_all_work(work_type)
@@ -389,26 +403,16 @@ def admin_panel():
         finally:
             return redirect("/admin")
     else:
-        return render_template("admin.html")
+        counts = heartbeat_db.get_stats()
+        not_operational = heartbeat_db.check_operational()
+        return render_template("admin.html", not_operational=not_operational, counts=counts)
 
 
 @app.route("/upload_new", methods=["POST", "GET"])
 def upload_via_frontend():
-    if "file" not in request.files:
-        return render_template("upload_new.html")
-    file = request.files["file"]
-    if file.filename == "":
-        return render_template("upload_new.html")
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        hash_object = hashlib.sha256(str(time.time()).encode())
-        hex_dig = hash_object.hexdigest()
-        new_filename = str(hex_dig) + "." + filename.split(".")[-1]
-        file.save(os.path.join(UPLOAD_FOLDER, new_filename))
-        heartbeat_db.upload_file(new_filename)
-        return render_template("success.html")
+
     return render_template("upload_new.html")
 
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", port=5001,debug=True)
+    app.run("0.0.0.0", port=5001, debug=True)

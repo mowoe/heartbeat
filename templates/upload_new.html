@@ -1,35 +1,91 @@
 <html>
-    {% include "head.jinja" %}
-    <body>
-        <script>
+{% include "head.jinja" %}
 
-            function update() {
-                document.getElementById("file-chosen").textContent = document.getElementById("actualbtn").files[0].name;
-                const [file] = actualbtn.files
-                if (file) {
-                    imgpreview.src = URL.createObjectURL(file)
-                    document.getElementById("imgpreview").style.width = "95%";
-                }
+<body>
+    <script>
+
+        function update() {
+            document.getElementById("file-chosen").textContent = document.getElementById("actualbtn").files[0].name;
+            const [file] = actualbtn.files
+            if (file) {
+                imgpreview.src = URL.createObjectURL(file)
+                document.getElementById("imgpreview").style.width = "95%";
             }
-        </script>
-        <div class="bckdiv">
+        }
+        window.addEventListener("load", function () {
+            function sendData() {
+                const XHR = new XMLHttpRequest();
+
+                const FD = new FormData(form);
+
+                XHR.addEventListener("load", function (event) {
+                    if (JSON.parse(event.target.responseText)["status"] == "success") {
+                        document.getElementById("successcontainer").style.display = "block";
+                        document.getElementById("message").innerHTML = JSON.parse(event.target.responseText)["reason"];
+                    } else {
+                        document.getElementById("failcontainer").style.display = "block";
+                        document.getElementById("failmessage").innerHTML = JSON.parse(event.target.responseText)["reason"];
+                    }
+                    document.getElementById("loader").style.display = "none";
+                });
+
+                XHR.addEventListener("error", function (event) {
+
+                    document.getElementById("failcontainer").style.display = "block";
+                });
+
+
+
+                document.getElementById("subform").style.display = "none";
+                document.getElementById("info").style.display = "none";
+                document.getElementById("loader").style.display = "block";
+
+                XHR.open("POST", "/api/add_image_file");
+
+                XHR.send(FD);
+            }
+
+            const form = document.getElementById("subform");
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                sendData();
+            });
+        });
+    </script>
+    <div class="bckdiv">
         <div class="main-container">
             <h1>HEARTBEAT</h1>
-            <h5>This page is only used to upload new images onto heartbeats database!</h5>
-            <form method="post" action="/upload_new" enctype="multipart/form-data">
+            <h5 id="info">This page is only used to upload new images onto heartbeats database!</h5>
+            <div id="successcontainer" style="display: none;">
+                <h6>Success!</h6>
+                <h6>Message:</h6>
+                <p id="message"></p>
+            </div>
+            <div class="loader center" id="loader" style="display: none;"></div>
+            <div id="failcontainer" style="display: none;">
+                <h6>An error occured!</h6>
+                <h6>Message:</h6>
+                <p id="failmessage">An unknown error occured.</p>
+            </div>
+            <form id="subform">
+                <input type="text" style="display: none;" name="origin" value="webinterface">
+                <input type="text" style="display: none;" name="img_info"
+                    value="{&quot;unknown&quot;:&quot;unknown&quot;}">
                 <input onchange="update();" id="actualbtn" class="upload" name="file" type="file" size="50"
                     accept="image/*" hidden />
                 <div class="grbckgrnd">
                     <label class="grbutton" for="actualbtn">Choose file</label>
                     <p style="margin: 10px; " id="file-chosen">No file chosen</p>
-                     <img style="width: 0%;"id="imgpreview" src="#" class="imgpreview" alt="" />
+                    <img style="width: 0%;" id="imgpreview" src="#" class="imgpreview" alt="" />
                 </div>
                 <div class="grbckgrnd">
-                    <button class="grbutton" >upload</button>
+                    <input class="grbutton" type="submit" value="Send Me!">
                 </div>
             </form>
         </div>
     </div>
-        {% include "footer.jinja" %}
-    </body>
+    {% include "footer.jinja" %}
+</body>
+
 </html>

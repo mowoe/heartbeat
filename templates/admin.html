@@ -13,8 +13,24 @@
                 <input name="action" type="text" value="delete_empty" style="visibility:hidden;">
                 <input name="login" type="submit" value="Delete all empty pictures">
             </form>
-        </div>
+            <br>
+            
     </div>
+    <div class="main-container">
+        Statistics:
+        <br>
+        <span>Total images uploaded: {{counts[1]}}</span><br>
+        <span>Total images processed: {{counts[0]}}</span><br>
+        <span class="w3-tag">Total found Faces: {{counts[2]}}</span><br>
+        Status:
+        <br>
+        {% if not_operational %}
+        <span>Sorry! This Heartbeat Instance is not operational. Please ensure at least 5 faces are in the database and a model is trained <a href="/admin">here</a>. </span>
+        {% else %}
+        <span>Everything seems to be working! This Instance is operational.</span>
+        {% endif %}
+    </div>
+</div>
         {% include "footer.jinja" %}
     </body>
 </html>
