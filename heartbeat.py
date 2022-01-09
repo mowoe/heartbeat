@@ -266,7 +266,6 @@ def get_matching_images():
 
 @app.route("/")
 def main():
-
     return render_template("index.html")
 
 
