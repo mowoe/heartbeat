@@ -46,8 +46,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
-dashboard.config.init_from(file='./dash_cfg.cfg')
-dashboard.bind(app)
+
 
 try:
     os.mkdir(UPLOAD_FOLDER)
@@ -415,4 +414,6 @@ def upload_via_frontend():
 
 
 if __name__ == "__main__":
+    dashboard.config.init_from(file='./dash_cfg.cfg')
+    dashboard.bind(app)
     app.run("0.0.0.0", port=5001, debug=True)
