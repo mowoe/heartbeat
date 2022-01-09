@@ -1,4 +1,4 @@
-FROM tiangolo/uwsgi-nginx-flask
+FROM tiangolo/uwsgi-nginx-flask:python3.8
 RUN apt update
 RUN apt install -y cmake
 RUN pip install face_recognition
