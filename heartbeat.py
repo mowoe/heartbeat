@@ -22,6 +22,7 @@ import read_config
 from threading import Thread
 from flask import g
 import flask_monitoringdashboard as dashboard
+import tasks
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -42,6 +43,12 @@ ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+app.config.update(
+    CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379'
+)
+
 
 model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
@@ -66,6 +73,7 @@ def constr_resp(status, reason="healthy"):
 
 def constr_resp_html(status, reason="healthy"):
     return render_template("constrresp.html", reason=reason, result=status)
+
 
 
 @app.route('/favicon.ico')
@@ -151,6 +159,8 @@ def add_image_file():
         information = json.loads(information)
         print(information)
         res = heartbeat_db.upload_file(new_filename, origin, information)
+        if res["status"] == "success":
+            task = tasks.find_faces.delay(res["id"])
         return constr_resp(res["status"], res["message"])
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
@@ -171,26 +181,6 @@ def add_image_file():
         )
 
 
-@app.route("/api/request_work", methods=["GET"])
-def request_work():
-    work_type = request.args.get("work_type")
-    results = heartbeat_db.request_work(work_type)
-    if len(results) > 0:
-        return constr_resp(str(results[0]))
-    else:
-        return constr_resp("error", "empty")
-
-
-@app.route("/api/submit_work", methods=["POST"])
-def submit_work():
-    start = time.time()
-    work_type = request.form.get("work_type")
-    img_id = request.form.get("image_id")
-    resulted = request.form.get("result")
-    heartbeat_db.submit_work(work_type, img_id, resulted)
-    print("Saving the submitted work took {} seconds".format(time.time() - start))
-    return constr_resp("success")
-
 
 @app.route("/api/get_all_work")
 def get_all_work():
@@ -202,7 +192,9 @@ def get_all_work():
 @app.route("/api/download_image")
 def download_image():
     imgid = request.args.get("image_id")
-    resp = heartbeat_db.get_file(imgid)
+    filename = heartbeat_db.get_file(imgid)
+    resp = send_file(os.path.join("./", filename), mimetype="image/png")
+    os.remove(os.path.join("./", filename))
     if type(resp) == type(None):
         resp = render_template(
             "error.html",
@@ -410,6 +402,13 @@ def admin_panel():
 def upload_via_frontend():
 
     return render_template("upload_new.html")
+
+@app.route("/celery_test")
+def cel_test():
+    result = tasks.matching_faces.delay(403)
+    i = result.wait()
+    return "ok "+str(i)
+
 
 
 if __name__ == "__main__":

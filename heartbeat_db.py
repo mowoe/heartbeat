@@ -195,9 +195,8 @@ class HeartbeatDB(object):
             filename, self.object_storage_type, self.object_storage_auth
         )
         stored_image.load_file()
-        resp = send_file(os.path.join("./", filename), mimetype="image/png")
-        stored_image.delete_locally()
-        return resp
+        return filename
+        
 
     def get_all_work(self, work_type):
         query = self.Results.select().where(self.Results.result_type == work_type)
