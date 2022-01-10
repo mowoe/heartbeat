@@ -1,3 +1,4 @@
+
 from flask import Flask
 from flask import request, make_response, url_for
 from flask import send_file, render_template, redirect, send_from_directory
@@ -27,7 +28,7 @@ import tasks
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
 
-
+#test
 heartbeat_db = HeartbeatDB()
 
 mysql_db = heartbeat_db.init_db(
