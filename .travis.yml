@@ -2,6 +2,8 @@ language: python
 services:
   - docker
   - mysql
+  - redis-server
+
 
 
 before_install:
@@ -9,12 +11,12 @@ before_install:
   - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
   - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
   - docker build -t mowoe/heartbeat .
-  - docker run --network host --name heartbeat -d --hostname heartbeat -p 80:80 -e DB_HOST=127.0.0.1  -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+  - docker run --network host --name heartbeat -d --hostname heartbeat -p 80:80 -e DB_HOST=127.0.0.1  -e CELERY_BROKER_URL=redis://localhost:6379 -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
   - docker ps -a
 
 install:
   - sleep 5
   - docker logs heartbeat
 
-script: docker logs heartbeat -f & pip install requests && pip install pillow && python tests/endpoint_test.py && docker login -u mowoe -p $DOCKER_LOGIN_PASS && sudo docker push mowoe/heartbeat:latest
+script: celery -A tasks.celery worker --loglevel=info & docker logs heartbeat -f & pip install requests && pip install pillow && python tests/endpoint_test.py && docker login -u mowoe -p $DOCKER_LOGIN_PASS && sudo docker push mowoe/heartbeat:latest
 
