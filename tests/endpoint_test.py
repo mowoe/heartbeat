@@ -43,25 +43,3 @@ if resp.status_code != 200:
     print(resp.text)
     exit(1)
 print("Uploading succeeded!")
-resp = requests.get(url+"/api/request_work?work_type=face_encodings")
-if resp.status_code != 200:
-    print(resp.text)
-    exit(1)
-print("Requesting work succeeded!")
-resp_json = resp.json()
-print(resp_json)
-image_id = resp_json["status"]
-print(image_id)
-fname = download_file(url+"/api/download_image?image_id="+str(image_id))
-print("Filename for downloading is: {}".format(fname))    
-face_encoding = {"encoding":[]}
-data = {
-    "image_id":str(image_id),
-    "work_type":"face_encodings",
-    "result":json.dumps(face_encoding)
-}
-resp = requests.post(url+"/api/submit_work",data=data)
-if resp.status_code != 200:
-    print(resp.text)
-    exit(1)
-print("Submitting data succeeded!")  
