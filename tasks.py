@@ -21,7 +21,7 @@ mysql_db = heartbeat_db.init_db(
 
 model_path = "./trained_knn_model.clf"
 
-celery = Celery('tasks', broker='redis://localhost:6379', backend='redis://localhost:6379')
+celery = Celery('tasks', broker=heartbeat_config.config["celery_broker_url"], backend=heartbeat_config.config["celery_broker_url"])
 
 @celery.task
 def find_faces(image_id):

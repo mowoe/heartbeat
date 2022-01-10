@@ -44,12 +44,6 @@ ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg", "gif"])
 app = Flask(__name__)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
-)
-
-
 model_path = "./trained_knn_model.clf"
 distance_threshold = 0.6
 near_images_to_show = 5
