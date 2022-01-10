@@ -1,2 +1,2 @@
 web: gunicorn -w 2 heartbeat:app
-worker: celery worker --app=tasks.
+worker: celery worker --app=tasks.celery

@@ -11,7 +11,7 @@ COPY ./examples /app/examples
 COPY ./heartbeat_db.py /app/heartbeat_db.py
 COPY ./read_config.py /app/read_config.py
 COPY ./heartbeat.py /app/main.py
-COPY ./tasks.py /app/main.py
+COPY ./tasks.py /app/tasks.py
 RUN echo "ignore-sigpipe=true" >> /etc/uwsgi/uwsgi.ini
 RUN echo "ignore-write-errors=true" >> /etc/uwsgi/uwsgi.ini
 RUN echo "disable-write-exception=true" >> /etc/uwsgi/uwsgi.ini
