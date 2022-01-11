@@ -115,8 +115,9 @@ def add_image():
         urllib.request.urlretrieve(
             img_url, os.path.join(UPLOAD_FOLDER, new_filename))
         print("Downloading took {} seconds".format(str(time.time()-s)))
+        print(information)
         information = json.loads(information)
-        information = json.dumps(information)
+        print(information)
         print("Uploading to DB and OS...")
         s = time.time()
         res = heartbeat_db.upload_file(new_filename, origin, information)
