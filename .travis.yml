@@ -9,14 +9,12 @@ before_install:
   - mysql -e 'CREATE DATABASE heartbeat;'
   - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
   - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
-  - docker build -t mowoe/heartbeat .
-  - docker run --network host --name heartbeat -d --hostname heartbeat -p 80:80 -e DB_HOST=127.0.0.1 -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+  - docker build -t mowoe/heartbeat_ci .
+  - docker run --network host --name heartbeat -d --hostname heartbeat -e DB_HOST=127.0.0.1 -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
   - docker ps -a
 
 install:
-  - pip install -r requirements.txt
-  - sleep 5
   - docker logs heartbeat
 
-script: docker logs heartbeat -f & pip install requests && pip install pillow && python tests/endpoint_test.py 
+script: docker logs heartbeat -f & python tests/endpoint_test.py 
 
