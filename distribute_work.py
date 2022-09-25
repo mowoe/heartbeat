@@ -8,36 +8,24 @@ import urllib.request
 import hashlib
 import time
 from urllib.parse import urlparse
+import read_config
 
-def read_celery_conf():
-    if os.path.exists("./heartbeat_celery_conf.json"):
-        with open("heartbeat_celery_conf.json","r") as f:
-            cfile = json.load(f)
-            queue_name = cfile["QUEUE_NAME"]
-            queue_url = cfile["QUEUE_URL"]
-            aws_secret_key = cfile["AWS_SECRET_KEY"]
-            aws_access_key = cfile["AWS_ACCESS_KEY"]
-        return queue_name, queue_url, safequote(aws_secret_key), safequote(aws_access_key)
-    else:
-        raise Exception("Config for celery not found.")
+heartbeat_config = read_config.HeartbeatConfig()
+heartbeat_config.setup()
 
-
-queue_name, queue_url, aws_secret_key, aws_access_key = read_celery_conf()
 
 broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
-    aws_access_key=aws_access_key, aws_secret_key=aws_secret_key,
+    aws_access_key=safequote(heartbeat_config.config["celery_aws_key"]), aws_secret_key=safequote(heartbeat_config.config["celery_aws_secret"]),
 )
-
-broker_transport_options = {'region': 'eu-central-1'}
 
 celery = Celery('work_delivery.distribute_work', broker=broker_url)
 
-celery.conf["task_default_queue"] = queue_name
+celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
 celery.conf["broker_transport_options"] = {
     'region': 'eu-central-1',
     'predefined_queues': {
-       queue_name: {
-            'url': queue_url
+       heartbeat_config.config["celery_queue_name"]: {
+            'url': heartbeat_config.config["celery_queue_url"]
         }
     }
 }
