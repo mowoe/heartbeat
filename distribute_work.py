@@ -7,6 +7,7 @@ import requests
 import urllib.request
 import hashlib
 import time
+from urllib.parse import urlparse
 
 def read_celery_conf():
     if os.path.exists("./heartbeat_celery_conf.json"):
@@ -29,7 +30,7 @@ broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
 
 broker_transport_options = {'region': 'eu-central-1'}
 
-celery = Celery('distribute_work', broker=broker_url)
+celery = Celery('work_delivery.distribute_work', broker=broker_url)
 
 celery.conf["task_default_queue"] = queue_name
 celery.conf["broker_transport_options"] = {
@@ -60,5 +61,16 @@ def facerec(url):
     lf = download_file(url)
     image = face_recognition.load_image_file(lf)
     face_locations = face_recognition.face_encodings(image)
+    image_id = url.split("=")[-1]
+    print("Image Id:{}".format(image_id))
     for n in face_locations:
         print("Found Face {}".format(n))
+        face_encoding = {"encoding": list(n)}
+        data = {
+            "work_type": "face_encodings",
+            "image_id": str(image_id),
+            "result":json.dumps(face_encoding)
+        }
+        parsed_uri = urlparse(url)
+        result = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
+        resp = requests.post("{}/api/submit_work".format(result),data = data)

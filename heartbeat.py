@@ -23,6 +23,7 @@ import read_config
 from threading import Thread
 from flask import g
 import flask_monitoringdashboard as dashboard
+from distribute_work import facerec
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -154,6 +155,9 @@ def add_image_file():
         information = json.loads(information)
         print(information)
         res = heartbeat_db.upload_file(new_filename, origin, information)
+        if res["status"] == "success":
+            url = "{}/api/download_image?image_id={}".format(heartbeat_config.config["hostname"],res["id"])
+            facerec.delay(url)
         return constr_resp(res["status"], res["message"])
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
