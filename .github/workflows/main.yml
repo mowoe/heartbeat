@@ -18,7 +18,7 @@ jobs:
           mysql user: 'heartbeat'
           mysql password: 'heartbeat'
       - name: Start Heartbeat Main Container
-        - shell: bash
+        shell: bash
         env:
           - CELERY_QUEUE_NAME: ${{ secrets.CELERY_QUEUE_NAME }}
           - CELERY_QUEUE_URL: ${{ secrets.CELERY_QUEUE_URL }}
@@ -26,7 +26,7 @@ jobs:
           - CELERY_AWS_KEY: ${{ secrets.CELERY_AWS_KEY }}
         run:  docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
       - name: Start Heartbeat Celery Worker
-        - shell: bash
+        shell: bash
         env:
           - CELERY_QUEUE_NAME: ${{ secrets.CELERY_QUEUE_NAME }}
           - CELERY_QUEUE_URL: ${{ secrets.CELERY_QUEUE_URL }}
