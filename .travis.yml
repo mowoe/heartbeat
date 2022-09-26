@@ -39,6 +39,6 @@ jobs:
         provider: script
         workspaces:
           use: ws1
-        script: bash tests/docker_push
+        script: bash tests/docker_push_stage
         on:
           branch: master
