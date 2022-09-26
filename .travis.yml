@@ -3,20 +3,25 @@ services:
   - docker
   - mysql
 
-before_install:
-  - mysql -e 'CREATE DATABASE heartbeat;'
-  - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
-  - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
-  - docker build -t mowoe/heartbeat_ci .
-  - docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
-  - docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
-  - docker ps -a
-
-install:
-  - pip install requests pillow numpy
-  - sleep 10
-  - docker logs heartbeat
-  - docker logs heartbeat_celery_worker
-
-script: docker logs heartbeat -f & docker logs heartbeat_celery_worker -f & python tests/endpoint_test.py && sleep 10
-
+jobs:
+  include:
+    - stage: build
+      name: "Build docker image"
+      script: docker build -t mowoe/heartbeat .
+    - stage: test
+      name: "Test docker image"
+      script:
+      - docker build -t mowoe/heartbeat .
+      - docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+      - docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+      - docker ps -a
+      - pip install requests pillow numpy
+      - sleep 5
+      - docker logs heartbeat -f & docker logs heartbeat_celery_worker -f & python tests/endpoint_test.py && sleep 5
+    - stage: deploy
+      script: skip
+      deploy:
+        provider: script
+        script: bash tests/docker_push
+        on:
+          branch: master
