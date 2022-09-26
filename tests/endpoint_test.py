@@ -38,8 +38,10 @@ data = {
 }
     
 resp = requests.post(url+"/api/add_image_file",data=data, files=files)
+time.sleep(5)
 print(resp.text)
 if resp.status_code != 200:
     print(resp.text)
     exit(1)
+assert resp.json()["status"] != "error"
 print("Uploading succeeded!")
