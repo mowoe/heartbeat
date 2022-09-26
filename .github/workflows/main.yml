@@ -1,0 +1,76 @@
+name: Heartbeat Actions CI
+on: [push]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildc
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker Container
+        run: docker build -t mowoe/heartbeat .
+      - name: Setup Mariadb
+        uses: getong/mariadb-action@v1.1
+        with:
+          mysql database: 'heartbeat'
+          mysql user: 'heartbeat'
+          mysql password: 'heartbeat'
+      - name: Wait until mariadb container is fully up
+        run: sleep 18
+      - name: Start Heartbeat Main Container
+        shell: bash
+        env:
+          CELERY_QUEUE_NAME: ${{ secrets.CELERY_QUEUE_NAME }}
+          CELERY_QUEUE_URL: ${{ secrets.CELERY_QUEUE_URL }}
+          CELERY_AWS_SECRET: ${{ secrets.CELERY_AWS_SECRET }}
+          CELERY_AWS_KEY: ${{ secrets.CELERY_AWS_KEY }}
+        run:  docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+      - name: Start Heartbeat Celery Worker
+        shell: bash
+        env:
+          CELERY_QUEUE_NAME: ${{ secrets.CELERY_QUEUE_NAME }}
+          CELERY_QUEUE_URL: ${{ secrets.CELERY_QUEUE_URL }}
+          CELERY_AWS_SECRET: ${{ secrets.CELERY_AWS_SECRET }}
+          CELERY_AWS_KEY: ${{ secrets.CELERY_AWS_KEY }}
+        run: docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
+      - name: Show running Containers
+        run: docker ps -a
+      - name: Wait for docker containers to come up
+        run: sleep 10
+      - name: Print heartbeat main container logs
+        run: docker logs heartbeat
+      - name: Print heartbeat celery worker container logs
+        run: docker logs heartbeat_celery_worker
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10' 
+      - name: Setup Python Dependencies for testing
+        run: pip install requests pillow numpy
+      - name: Run Python tests
+        run: python tests/endpoint_test.py
+
+
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: success() && github.ref == 'refs/heads/master'
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/heartbeat:latest

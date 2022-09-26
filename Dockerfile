@@ -1,17 +1,8 @@
-FROM tiangolo/uwsgi-nginx-flask:python3.8
-RUN apt update
-RUN apt install -y cmake
-RUN pip install face_recognition
-COPY ./requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt
-RUN mkdir /app/uploaded_pics
-COPY ./static /app/static
-COPY ./templates /app/templates
-COPY ./examples /app/examples
-COPY ./heartbeat_db.py /app/heartbeat_db.py
-COPY ./read_config.py /app/read_config.py
-COPY ./heartbeat.py /app/main.py
-COPY ./tasks.py /app/tasks.py
-RUN echo "ignore-sigpipe=true" >> /etc/uwsgi/uwsgi.ini
-RUN echo "ignore-write-errors=true" >> /etc/uwsgi/uwsgi.ini
-RUN echo "disable-write-exception=true" >> /etc/uwsgi/uwsgi.ini
+FROM python:slim
+RUN apt update && apt install -y cmake build-essential libcurl4-openssl-dev libssl-dev gcc
+RUN python -m pip install --no-cache --upgrade pip setuptools
+COPY ./ /heartbeat/
+RUN python3 -m pip install --no-cache -r /heartbeat/requirements.txt
+RUN useradd -ms /bin/bash celery
+WORKDIR /heartbeat
+CMD ["gunicorn", "--error-logfile", "-", "--access-logfile", "-","heartbeat:app", "-b", ":80"]

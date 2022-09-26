@@ -23,7 +23,8 @@ import read_config
 from threading import Thread
 from flask import g
 import flask_monitoringdashboard as dashboard
-import tasks
+from distribute_work import facerec
+import traceback
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -136,7 +137,7 @@ def add_image():
             "database error", "if this error keeps occuring contact admin"
         )
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
         )
@@ -153,10 +154,10 @@ def add_image_file():
         file.save(os.path.join(UPLOAD_FOLDER, new_filename))
         print(information)
         information = json.loads(information)
-        print(information)
         res = heartbeat_db.upload_file(new_filename, origin, information)
         if res["status"] == "success":
-            task = tasks.find_faces.delay(res["id"])
+            url = "{}/api/download_image?image_id={}".format(heartbeat_config.config["hostname"],res["id"])
+            facerec.delay(url)
         return constr_resp(res["status"], res["message"])
     except peewee.InterfaceError as e:
         print("PeeWee Interface broken!")
@@ -171,12 +172,20 @@ def add_image_file():
             "database error", "if this error keeps occuring contact admin"
         )
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
         )
 
-
+@app.route("/api/submit_work", methods=["POST"])
+def submit_work():
+    start = time.time()
+    work_type = request.form.get("work_type")
+    img_id = request.form.get("image_id")
+    resulted = request.form.get("result")
+    heartbeat_db.submit_work(work_type, img_id, resulted)
+    print("Saving the submitted work took {} seconds".format(time.time() - start))
+    return constr_resp("success")
 
 @app.route("/api/get_all_work")
 def get_all_work():
@@ -396,14 +405,7 @@ def admin_panel():
 
 @app.route("/upload_new", methods=["POST", "GET"])
 def upload_via_frontend():
-
     return render_template("upload_new.html")
-
-@app.route("/celery_test")
-def cel_test():
-    result = tasks.matching_faces.delay(403)
-    i = result.wait()
-    return "ok "+str(i)
 
 
 
