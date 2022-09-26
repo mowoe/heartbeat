@@ -21,7 +21,7 @@ jobs:
       name: "Test docker image"
       workspaces:
         use: 
-          -ws1
+          - ws1
       script:
       - docker load --input heartbeat.tar
       - mysql -e 'CREATE DATABASE heartbeat;'
