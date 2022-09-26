@@ -17,6 +17,8 @@ jobs:
           mysql database: 'heartbeat'
           mysql user: 'heartbeat'
           mysql password: 'heartbeat'
+      - name: Wait until mariadb container is fully up
+        run: sleep 18
       - name: Start Heartbeat Main Container
         shell: bash
         env:
@@ -45,7 +47,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10' 
-      - name: Setup Pyton Dependencies for testing
+      - name: Setup Python Dependencies for testing
         run: pip install requests pillow numpy
       - name: Run Python tests
         run: python tests/endpoint_test.py
