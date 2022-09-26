@@ -11,7 +11,7 @@ before_install:
   - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
   - docker build -t mowoe/heartbeat_ci .
   - docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
-  - docker run --network host --name heartbeat_celery_worker --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
+  - docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat_ci
   - docker ps -a
 
 install:
