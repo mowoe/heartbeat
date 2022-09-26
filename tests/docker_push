@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "$DOCKER_LOGIN_PASS" | docker login -u "$DOCKER_USERNAME" --password-stdin
-docker push mowoe/heartbeat
