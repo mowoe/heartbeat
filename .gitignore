@@ -80,9 +80,14 @@ db_auth.json
 db_conf.json
 s3_auth.json
 aws_auth.json
+heartbeat_conf.json
 *.db
 *.clf
 uploaded_pics/
+heartbeat-images/
 
 #vscode
 .vscode/
+
+#.idea
+.idea/
