@@ -24,6 +24,7 @@ from threading import Thread
 from flask import g
 import flask_monitoringdashboard as dashboard
 from distribute_work import facerec
+import traceback
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -136,7 +137,7 @@ def add_image():
             "database error", "if this error keeps occuring contact admin"
         )
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
         )
@@ -153,7 +154,6 @@ def add_image_file():
         file.save(os.path.join(UPLOAD_FOLDER, new_filename))
         print(information)
         information = json.loads(information)
-        print(information)
         res = heartbeat_db.upload_file(new_filename, origin, information)
         if res["status"] == "success":
             url = "{}/api/download_image?image_id={}".format(heartbeat_config.config["hostname"],res["id"])
@@ -172,7 +172,7 @@ def add_image_file():
             "database error", "if this error keeps occuring contact admin"
         )
     except Exception as e:
-        print(e)
+        print(traceback.format_exc())
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
         )
