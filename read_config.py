@@ -65,7 +65,11 @@ class HeartbeatConfig(object):
             "object_storage_auth":object_storage_auth,
             "db_type":db_type,
             "db_auth":db_auth,
-            "celery_broker_url":os.environ.get("CELERY_BROKER_URL")
+            "celery_broker_url":os.environ.get("CELERY_BROKER_URL"),
+            "celery_aws_key":celery_aws_key,
+            "celery_aws_secret":celery_aws_secret,
+            "celery_queue_name":celery_queue_name,
+            "celery_queue_url":celery_queue_url
         }
 
         return config
