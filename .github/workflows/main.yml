@@ -1,0 +1,9 @@
+name: Heartbeat Actions CI
+on: [push]
+
+jobs:
+  building-test:
+    runs-pn:
+      runs-on: ubuntu-latest
+      steps:
+      - run: echo "Okay first test"
