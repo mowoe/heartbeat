@@ -18,7 +18,7 @@ install:
   - pip install requests pillow numpy
   - sleep 10
   - docker logs heartbeat
-  - docker logs hearbeat_celery_worker
+  - docker logs heartbeat_celery_worker
 
 script: docker logs heartbeat -f & python tests/endpoint_test.py && sleep 10
 
