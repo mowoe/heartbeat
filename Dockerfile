@@ -3,5 +3,6 @@ RUN apt update && apt install -y cmake build-essential
 RUN python -m pip install --no-cache --upgrade pip setuptools
 COPY ./ /heartbeat/
 RUN python3 -m pip install --no-cache -r /heartbeat/requirements.txt
+RUN useradd -ms /bin/bash celery
 WORKDIR /heartbeat
 CMD ["gunicorn", "--error-logfile", "-", "--access-logfile", "-","heartbeat:app", "-b", ":80"]
