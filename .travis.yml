@@ -3,8 +3,6 @@ services:
   - docker
   - mysql
 
-
-
 before_install:
   - mysql -e 'CREATE DATABASE heartbeat;'
   - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
@@ -20,5 +18,5 @@ install:
   - docker logs heartbeat
   - docker logs heartbeat_celery_worker
 
-script: docker logs heartbeat -f & python tests/endpoint_test.py && sleep 10
+script: docker logs heartbeat -f & docker logs heartbeat_celery_worker -f & python tests/endpoint_test.py && sleep 10
 
