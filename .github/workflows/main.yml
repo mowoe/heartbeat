@@ -2,7 +2,14 @@ name: Heartbeat Actions CI
 on: [push]
 
 jobs:
-  building-test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Okay first test"
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Docker Buildc
+        uses: docker/setup-buildx-action@v1
+      - name: Build Docker Container
+        run: docker build -t mowoe/heartbeat .
+      
+  
