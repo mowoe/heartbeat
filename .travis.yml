@@ -8,12 +8,24 @@ jobs:
     - stage: build
       install: skip
       name: "Build docker image"
-      script: docker build -t mowoe/heartbeat .
+      script: 
+        - docker build -t mowoe/heartbeat . 
+        - docker save --output /heartbeat.tar mowoe/heartbeat
+      workspaces:
+        create:
+        name: ws1
+        paths:
+          - /heartbeat.tar
     - stage: test
       install: skip
       name: "Test docker image"
+      workspaces:
+        use: ws1
       script:
-      - docker build -t mowoe/heartbeat .
+      - docker load --input /heartbeat.tar
+      - mysql -e 'CREATE DATABASE heartbeat;'
+      - mysql -e "CREATE USER 'heartbeat'@'%' IDENTIFIED BY 'heartbeat';"
+      - mysql -e "GRANT ALL PRIVILEGES ON * . * TO 'heartbeat'@'%';"
       - docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
       - docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=$CELERY_QUEUE_NAME -e CELERY_QUEUE_URL=$CELERY_QUEUE_URL -e CELERY_AWS_SECRET=$CELERY_AWS_SECRET -e CELERY_AWS_KEY=$CELERY_AWS_KEY -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
       - docker ps -a
@@ -25,6 +37,8 @@ jobs:
       script: skip
       deploy:
         provider: script
+        workspaces:
+          use: ws1
         script: bash tests/docker_push
         on:
           branch: master
