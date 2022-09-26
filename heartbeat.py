@@ -405,7 +405,6 @@ def admin_panel():
 
 @app.route("/upload_new", methods=["POST", "GET"])
 def upload_via_frontend():
-
     return render_template("upload_new.html")
 
 
