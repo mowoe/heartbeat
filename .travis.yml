@@ -6,9 +6,11 @@ services:
 jobs:
   include:
     - stage: build
+      install: skip
       name: "Build docker image"
       script: docker build -t mowoe/heartbeat .
     - stage: test
+      install: skip
       name: "Test docker image"
       script:
       - docker build -t mowoe/heartbeat .
@@ -19,6 +21,7 @@ jobs:
       - sleep 5
       - docker logs heartbeat -f & docker logs heartbeat_celery_worker -f & python tests/endpoint_test.py && sleep 5
     - stage: deploy
+      install: skip
       script: skip
       deploy:
         provider: script
