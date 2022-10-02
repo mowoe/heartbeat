@@ -38,7 +38,6 @@ data = {
 }
     
 resp = requests.post(url+"/api/add_image_file",data=data, files=files)
-time.sleep(5)
 print(resp.text)
 if resp.status_code != 200:
     print(resp.text)
@@ -46,8 +45,8 @@ if resp.status_code != 200:
 assert resp.json()["status"] != "error"
 print("Uploading succeeded!")
 
-#Wait 20 seconds, to let the workers pickup our uploaded image
-time.sleep(20)
+#Wait 10 seconds, to let the workers pickup our uploaded image
+time.sleep(10)
 
 #Test correct encoding numbers
 resp = requests.get(url+"/api/get_stats")
