@@ -38,7 +38,7 @@ else:
 def download_file(url):
     hash_object = hashlib.sha256(str(time.time()).encode())
     hex_dig = hash_object.hexdigest()
-    local_filename = str(hex_dig) + ".png"
+    local_filename = "~/"+str(hex_dig) + ".png"
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         with open(local_filename, "wb") as f:
