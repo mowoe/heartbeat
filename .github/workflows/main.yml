@@ -44,6 +44,10 @@ jobs:
         run: pip install requests pillow numpy
       - name: Run Python tests
         run: python tests/endpoint_test.py
+      - name: Always show logs for containers
+        if: always()
+        shell: bash
+        run: docker logs heartbeat && docker logs heartbeat_celery_worker
 
 
 
