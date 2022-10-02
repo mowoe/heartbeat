@@ -45,3 +45,10 @@ if resp.status_code != 200:
     exit(1)
 assert resp.json()["status"] != "error"
 print("Uploading succeeded!")
+
+#Test correct encoding numbers
+resp = requests.get(url+"/api/get_stats")
+resp = resp.json()
+assert resp["processed"] == 1
+assert resp["total"] == 1
+assert resp["encodings"] == 0

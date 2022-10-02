@@ -348,6 +348,16 @@ def delete_file():
     resp = heartbeat_db.get_file(imgid)
     return render_template("success.html")
 
+@app.route("/api/get_stats", methods=["GET"])
+def get_stats():
+    counts = heartbeat_db.get_stats()
+    res = json.dumps({
+        "processed":counts[0],
+        "total":counts[1],
+        "encodings":counts[2]
+    })
+    return res
+
 
 @app.route("/admin", methods=["GET"])
 def admin_panel():

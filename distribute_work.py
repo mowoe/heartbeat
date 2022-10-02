@@ -14,11 +14,6 @@ heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
 
 
-broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
-    aws_access_key=safequote(heartbeat_config.config["celery_aws_key"]), aws_secret_key=safequote(heartbeat_config.config["celery_aws_secret"]),
-)
-
-
 if heartbeat_config.config["celery_aws_type"] == "elasticmq":
     celery = Celery('distribute_work', broker="sqs://localhost:9324")
     celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
