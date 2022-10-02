@@ -46,6 +46,9 @@ if resp.status_code != 200:
 assert resp.json()["status"] != "error"
 print("Uploading succeeded!")
 
+#Wait 20 seconds, to let the workers pickup our uploaded image
+time.sleep(20)
+
 #Test correct encoding numbers
 resp = requests.get(url+"/api/get_stats")
 resp = resp.json()
