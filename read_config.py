@@ -72,6 +72,7 @@ class HeartbeatConfig(object):
             "celery_aws_secret":celery_aws_secret,
             "celery_queue_name":celery_queue_name,
             "celery_queue_url":celery_queue_url,
+            "celery_aws_type":celery_aws_type,
             "hostname":hostname
         }
 

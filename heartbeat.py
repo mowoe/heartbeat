@@ -64,7 +64,7 @@ def allowed_file(filename):
 
 
 def constr_resp(status, reason="healthy"):
-    return json.dumps({"status": status, "reason": reason})
+    return {"status": status, "reason": reason}
 
 
 def constr_resp_html(status, reason="healthy"):
@@ -191,7 +191,7 @@ def submit_work():
 def get_all_work():
     work_type = request.args.get("work_type")
     results = heartbeat_db.get_all_work(work_type)
-    return json.dumps({"result": json.dumps(results)})
+    return {"result": json.dumps(results)}
 
 
 @app.route("/api/download_image")
@@ -248,8 +248,7 @@ def get_matching_images():
             )
         ]
     )
-    return json.dumps(
-        {
+    return {
             "result": [
                 (pred, loc) if rec else ("unknown", loc)
                 for pred, loc, rec in zip(
@@ -258,7 +257,7 @@ def get_matching_images():
                 )
             ]
         }
-    )
+    
 
 
 @app.route("/")
@@ -351,11 +350,11 @@ def delete_file():
 @app.route("/api/get_stats", methods=["GET"])
 def get_stats():
     counts = heartbeat_db.get_stats()
-    res = json.dumps({
+    res = {
         "processed":counts[0],
         "total":counts[1],
         "encodings":counts[2]
-    })
+    }
     return res
 
 
