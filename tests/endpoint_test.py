@@ -52,6 +52,7 @@ time.sleep(20)
 #Test correct encoding numbers
 resp = requests.get(url+"/api/get_stats")
 resp = resp.json()
+print(resp)
 assert resp["processed"] == 1
 assert resp["total"] == 1
 assert resp["encodings"] == 0
