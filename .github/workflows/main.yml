@@ -24,11 +24,9 @@ jobs:
         run: sleep 20
       - name: Start Heartbeat Main Container
         shell: bash
-        env:
         run:  docker run --network host --name heartbeat -d --hostname heartbeat -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=heartbeat-workqueue -e CELERY_AWS_TYPE=elasticmq -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
       - name: Start Heartbeat Celery Worker
         shell: bash
-        env:
         run: docker run --network host --name heartbeat_celery_worker -d --entrypoint=/heartbeat/tests/start_celery_worker.sh -e HEARTBEAT_HOSTNAME=http://localhost:80 -e DB_HOST=127.0.0.1 -e CELERY_QUEUE_NAME=heartbeat-workqueue -e CELERY_AWS_TYPE=elasticmq -e DB_PORT=3306 -e DB_PASSWORD=heartbeat -e DB_DATABASE=heartbeat -e DB_USER=heartbeat -e DB_TYPE=mysql -e OS_TYPE=local mowoe/heartbeat
       - name: Show running Containers
         run: docker ps -a
