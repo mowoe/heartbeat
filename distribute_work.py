@@ -15,7 +15,7 @@ heartbeat_config.setup()
 
 
 if heartbeat_config.config["celery_aws_type"] == "elasticmq":
-    celery = Celery('distribute_work', broker="sqs://localhost:9324")
+    celery = Celery('distribute_work', broker="sqs://x:x@localhost:9324")
     celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
 elif heartbeat_config.config["celery_aws_type"] == "sqs":
     broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
