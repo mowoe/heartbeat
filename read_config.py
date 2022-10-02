@@ -60,6 +60,7 @@ class HeartbeatConfig(object):
         celery_aws_secret = os.environ.get('CELERY_AWS_SECRET')
         celery_queue_name = os.environ.get('CELERY_QUEUE_NAME')
         celery_queue_url = os.environ.get('CELERY_QUEUE_URL')
+        celery_aws_type = os.environ.get('CELERY_AWS_TYPE')
         hostname = os.environ.get('HEARTBEAT_HOSTNAME')
         config = {
             "object_storage_type":object_storage_type,

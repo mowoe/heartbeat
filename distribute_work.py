@@ -18,17 +18,26 @@ broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
     aws_access_key=safequote(heartbeat_config.config["celery_aws_key"]), aws_secret_key=safequote(heartbeat_config.config["celery_aws_secret"]),
 )
 
-celery = Celery('work_delivery.distribute_work', broker=broker_url)
 
-celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
-celery.conf["broker_transport_options"] = {
-    'region': 'eu-central-1',
-    'predefined_queues': {
-       heartbeat_config.config["celery_queue_name"]: {
-            'url': heartbeat_config.config["celery_queue_url"]
+if heartbeat_config.config["celery_aws_type"] == "elasticmq":
+    celery = Celery('distribute_work', broker="sqs://localhost:9324")
+    celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
+elif heartbeat_config.config["celery_aws_type"] == "sqs":
+    broker_url = "sqs://{aws_access_key}:{aws_secret_key}@".format(
+        aws_access_key=safequote(heartbeat_config.config["celery_aws_key"]), aws_secret_key=safequote(heartbeat_config.config["celery_aws_secret"]),
+    )
+    celery = Celery('work_delivery.distribute_work', broker=broker_url)
+    celery.conf["task_default_queue"] = heartbeat_config.config["celery_queue_name"]
+    celery.conf["broker_transport_options"] = {
+        'region': 'elasticmq',
+        'predefined_queues': {
+        heartbeat_config.config["celery_queue_name"]: {
+                'url': heartbeat_config.config["celery_queue_url"]
+            }
         }
     }
-}
+else:
+    raise NotImplementedError
 
 
 def download_file(url):
