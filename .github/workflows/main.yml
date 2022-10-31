@@ -2,6 +2,18 @@ name: Heartbeat Actions CI
 on: [push]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: install requirements
+        shell: bash
+        run: pip install -r requirements.txt
+      -name: run lint
+        shell: bash
+        run: pylint -d C0116 *.py
+
   build_and_test:
     runs-on: ubuntu-latest
     steps:
