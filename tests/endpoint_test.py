@@ -46,7 +46,7 @@ assert resp.json()["status"] != "error"
 print("Uploading succeeded!")
 
 #Wait 10 seconds, to let the workers pickup our uploaded image
-time.sleep(10)
+time.sleep(30)
 
 #Test correct encoding numbers
 resp = requests.get(url+"/api/get_stats")
