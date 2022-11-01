@@ -76,4 +76,5 @@ def facerec(url):
         }
         parsed_uri = urlparse(url)
         result = '{uri.scheme}://{uri.netloc}'.format(uri=parsed_uri)
-        requests.post(f"{result}/api/submit_work", data=data)
+        resp = requests.post(f"{result}/api/submit_work", data=data)
+        print(result,resp.text)
