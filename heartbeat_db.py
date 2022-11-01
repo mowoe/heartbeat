@@ -297,6 +297,7 @@ class HeartbeatDB:
 
     def check_operational(self):
         count_processed, count_total, count_encodings = self.get_stats()
+        print(count_processed,count_encodings,count_total)
         not_operational = count_encodings <= 5
         retrieve_model_unsuccessful = self.retrieve_model()
         if not not_operational:
