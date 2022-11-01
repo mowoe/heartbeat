@@ -10,7 +10,7 @@ jobs:
       - name: install requirements
         shell: bash
         run: pip install -r requirements.txt
-      -name: run lint
+      - name: run lint
         shell: bash
         run: pylint -d C0116 *.py
 
