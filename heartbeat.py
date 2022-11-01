@@ -106,18 +106,18 @@ def add_image():
             return constr_resp("error", "no correct fileformat")
         time_hash = hashlib.sha256(str(time.time()).encode()).hexdigest()
         new_filename = str(time_hash) + fend
-        print("Downloading Image {}...".format(img_url))
-        s = time.time()
+        print(f"Downloading Image {img_url}...")
+        start_time = time.time()
         urllib.request.urlretrieve(
             img_url, os.path.join(UPLOAD_FOLDER, new_filename))
-        print("Downloading took {} seconds".format(str(time.time() - s)))
+        print(f"Downloading took {str(time.time() - start_time)} seconds")
         print(information)
         information = json.loads(information)
         print(information)
         print("Uploading to DB and OS...")
-        s = time.time()
+        start_time = time.time()
         res = heartbeat_db.upload_file(new_filename, origin, information)
-        print("Uploading to DB took {} seconds".format(str(time.time() - s)))
+        print(f"Uploading to DB took {str(time.time() - start_time)} seconds")
         return constr_resp(res['status'], res['message'])
     except peewee.InterfaceError as error:
         print("PeeWee Interface broken!")
@@ -156,7 +156,7 @@ def add_image_file():
                 heartbeat_config.config["hostname"], res["id"])
             facerec.delay(url)
         return constr_resp(res["status"], res["message"])
-    except peewee.InterfaceError as e:
+    except peewee.InterfaceError as error:
         print("PeeWee Interface broken!")
         mysql_db = heartbeat_db.init_db(
             heartbeat_config.config["db_type"],
@@ -164,11 +164,11 @@ def add_image_file():
             heartbeat_config.config["object_storage_type"],
             heartbeat_config.config["object_storage_auth"],
         )
-        print(e)
+        print(error)
         return constr_resp(
             "database error", "if this error keeps occuring contact admin"
         )
-    except Exception as e:
+    except Exception as error:
         print(traceback.format_exc())
         return constr_resp(
             "error", "unknown error, maybe not all query parameters were specified?"
@@ -182,7 +182,7 @@ def submit_work():
     img_id = request.form.get("image_id")
     resulted = request.form.get("result")
     heartbeat_db.submit_work(work_type, img_id, resulted)
-    print("Saving the submitted work took {} seconds".format(time.time() - start))
+    print(f"Saving the submitted work took {time.time() - start} seconds")
     return constr_resp("success")
 
 
@@ -205,14 +205,13 @@ def download_image():
             errormessage="Das Bild scheint nicht mehr vorhanden zu sein. Sorry!",
         )
         return resp, 404
-    else:
-        return resp, 200
+    return resp, 200
 
 
 @app.route("/api/get_matching_images", methods=["POST"])
 def get_matching_images():
-    with open(MODEL_PATH, "rb") as f:
-        knn_clf = pickle.load(f)
+    with open(MODEL_PATH, "rb") as opened_file:
+        knn_clf = pickle.load(opened_file)
     file = request.files["file"]
     file.save("facerec_img.png")
     x_img = face_recognition.load_image_file("facerec_img.png")
@@ -274,47 +273,48 @@ def frontend_matching_images():
     if model_not_present:
         return render_template(
             "error.html",
-            errormessage="There doesnt seem to exist a trained model, not locally nor in the file storage. \
-                Please train a model first before using heartbeat by visiting /admin."
+            errormessage="There doesnt seem to exist a trained model, not locally nor in the \
+            file storage. Please train a model first before using heartbeat by visiting /admin."
         )
-    with open(MODEL_PATH, "rb") as openedFile:
-        knn_clf = pickle.load(openedFile)
+    with open(MODEL_PATH, "rb") as opened_file:
+        knn_clf = pickle.load(opened_file)
     file = request.files["file"]
     file.save(file.filename)
     print(file.filename)
     try:
-        X_img = face_recognition.load_image_file(file.filename)
-        X_face_locations = face_recognition.face_locations(X_img)
+        x_img = face_recognition.load_image_file(file.filename)
+        x_face_locations = face_recognition.face_locations(x_img)
     except TypeError:
         print("TypeError Catched!")
         return render_template(
             "error.html",
-            errormessage="Ein Fehler ist aufgetreten, ist eventuell kein Gesicht auf dem Bild oder ist das Bild zu gross?",
+            errormessage="Ein Fehler ist aufgetreten, ist eventuell kein Gesicht auf dem Bild \
+                oder  ist das Bild zu gross?",
         )
-    if len(X_face_locations) == 0:
+    if len(x_face_locations) == 0:
         return render_template(
             "error.html",
             errormessage="Wir konnten kein Gesicht auf deinem Bild finden!",
         )
     faces_encodings = face_recognition.face_encodings(
-        X_img, known_face_locations=X_face_locations
+        x_img, known_face_locations=x_face_locations
     )
     closest_distances = knn_clf.kneighbors(
         faces_encodings, n_neighbors=NEAR_IMAGES_TO_SHOW
     )
-    with open("./trained_knn_list.clf", "rb") as openedFile:
-        all_labels = pickle.load(openedFile)
+    with open("./trained_knn_list.clf", "rb") as opened_file:
+        all_labels = pickle.load(opened_file)
 
     print("These are the IDs of found images:")
     print(closest_distances[1][0])
     print("These are the scores of the images found:")
     print(closest_distances[0][0])
     labels = [all_labels[i] for i in closest_distances[1][0]]
-    print("Real Labels:\n{}".format(labels))
+    print(f"Real Labels:\n{labels}")
     res = []
-    for x in range(len(closest_distances[1][0])):
-        score = closest_distances[0][0][x]
-        label = all_labels[closest_distances[1][0][x]]
+    for closest_distance_index in range(len(closest_distances[1][0])):
+        score = closest_distances[0][0][closest_distance_index]
+        label = all_labels[closest_distances[1][0][closest_distance_index]]
         if score <= DISTANCE_THRESHOLD:
             labels = []
             try:
@@ -331,10 +331,12 @@ def frontend_matching_images():
                             labels.append(key + ": " + str(other_data[key]))
                 res.append({"id": label, "score": str(
                     score)[:5], "labels": labels})
-            except KeyError as e:
-                print(e)
+            except KeyError as error:
+                print(error)
+                errormessage=f"Images which are existent in the database dont seem to be existent \
+                     in the file storage. {error}"
                 return render_template(
-                    "error.html", errormessage="Images which are existent in the database, dont seem to be existent in the file storage. {}".format(e))
+                    "error.html", errormessage = errormessage)
 
     print(res)
     os.remove(file.filename)
@@ -367,7 +369,7 @@ def admin_panel():
             if action == "update_knn":
                 print("Starting")
                 print("Started Thread!")
-                X, y = [], []
+                x_loactions, y_locations = [], []
                 counter = 0
                 work_type = "face_encodings"
                 results = heartbeat_db.get_all_work(work_type)
@@ -375,28 +377,28 @@ def admin_panel():
                 for encoding in all_encodings:
                     face_bounding_boxes = json.loads(encoding[2])["encoding"]
                     if len(face_bounding_boxes) > 2:
-                        X.append(np.array(face_bounding_boxes))
-                        y.append(encoding[0])
+                        x_loactions.append(np.array(face_bounding_boxes))
+                        y_locations.append(encoding[0])
                         counter += 1
-                print("found {} encodings".format(counter))
+                print(f"found {counter} encodings")
 
-                n_neighbors = int(round(math.sqrt(len(X))))
+                n_neighbors = int(round(math.sqrt(len(x_loactions))))
 
                 knn_clf = neighbors.KNeighborsClassifier(
                     n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
                 )
-                knn_clf.fit(X, y)
+                knn_clf.fit(x_loactions, y_locations)
 
-                with open(MODEL_PATH, "wb") as f:
-                    pickle.dump(knn_clf, f)
-                with open("trained_knn_list.clf", "wb") as f:
-                    pickle.dump(y, f)
+                with open(MODEL_PATH, "wb") as opened_file:
+                    pickle.dump(knn_clf, opened_file)
+                with open("trained_knn_list.clf", "wb") as opened_file:
+                    pickle.dump(y_locations, opened_file)
                 heartbeat_db.safe_model()
                 print(task.ready())
             if action == "delete_empty":
                 print("Deleting all images with no faces detected on.")
                 heartbeat_db.delete_empty()
-        except peewee.InterfaceError as errorMessage:
+        except peewee.InterfaceError as error_message:
             print("PeeWee Interface broken!")
             mysql_db = heartbeat_db.init_db(
                 heartbeat_config.config["db_type"],
@@ -404,7 +406,7 @@ def admin_panel():
                 heartbeat_config.config["object_storage_type"],
                 heartbeat_config.config["object_storage_auth"],
             )
-            print(errorMessage)
+            print(error_message)
         finally:
             return redirect("/admin")
     else:
