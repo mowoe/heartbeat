@@ -1,4 +1,4 @@
-FROM python:slim
+FROM python:3.10.8-slim-bullseye
 RUN apt update && apt install -y cmake build-essential libcurl4-openssl-dev libssl-dev gcc
 RUN python -m pip install --no-cache --upgrade pip setuptools
 COPY ./ /heartbeat/
