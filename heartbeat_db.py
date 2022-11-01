@@ -211,7 +211,7 @@ class HeartbeatDB:
         return results
 
     def request_work(self, work_type):
-        query = self.Image.select().where(self.Image.face_rec_worked is
+        query = self.Image.select().where(self.Image.face_rec_worked ==
                                           False).order_by(peewee.fn.Rand()).limit(60)
         results = []
         for result in query:
@@ -261,7 +261,7 @@ class HeartbeatDB:
 
     def get_stats(self):
         count_processed = self.Image.select().where(
-            self.Image.face_rec_worked is True).count()
+            self.Image.face_rec_worked == True).count()
         count_total = self.Image.select().count()
         count_encodings = self.Results.select().where(
             self.Results.result != "{\"encoding\": []}").count()
