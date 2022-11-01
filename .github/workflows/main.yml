@@ -7,7 +7,7 @@ jobs:
     steps:
       - name: install curl
         shell: bash
-        run: apt install curl
+        run: sudo apt install -y curl
       - name: Checkout
         uses: actions/checkout@v3
       - name: install requirements
