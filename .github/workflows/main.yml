@@ -5,6 +5,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: apt update
+        shell: bash
+        run: sudo apt update
       - name: install curl
         shell: bash
         run: sudo apt install -y curl libcurl4-openssl-dev libssl-dev
