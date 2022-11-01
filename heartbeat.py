@@ -364,56 +364,55 @@ def get_stats():
 @app.route("/admin", methods=["GET"])
 def admin_panel():
     action = request.args.get("action")
-    if not isinstance(action, type(None)):
-        try:
-            if action == "update_knn":
-                print("Starting")
-                print("Started Thread!")
-                x_loactions, y_locations = [], []
-                counter = 0
-                work_type = "face_encodings"
-                results = heartbeat_db.get_all_work(work_type)
-                all_encodings = results
-                for encoding in all_encodings:
-                    face_bounding_boxes = json.loads(encoding[2])["encoding"]
-                    if len(face_bounding_boxes) > 2:
-                        x_loactions.append(np.array(face_bounding_boxes))
-                        y_locations.append(encoding[0])
-                        counter += 1
-                print(f"found {counter} encodings")
-
-                n_neighbors = int(round(math.sqrt(len(x_loactions))))
-
-                knn_clf = neighbors.KNeighborsClassifier(
-                    n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
-                )
-                knn_clf.fit(x_loactions, y_locations)
-
-                with open(MODEL_PATH, "wb") as opened_file:
-                    pickle.dump(knn_clf, opened_file)
-                with open("trained_knn_list.clf", "wb") as opened_file:
-                    pickle.dump(y_locations, opened_file)
-                heartbeat_db.safe_model()
-                print(task.ready())
-            if action == "delete_empty":
-                print("Deleting all images with no faces detected on.")
-                heartbeat_db.delete_empty()
-        except peewee.InterfaceError as error_message:
-            print("PeeWee Interface broken!")
-            mysql_db = heartbeat_db.init_db(
-                heartbeat_config.config["db_type"],
-                heartbeat_config.config["db_auth"],
-                heartbeat_config.config["object_storage_type"],
-                heartbeat_config.config["object_storage_auth"],
-            )
-            print(error_message)
-        finally:
-            return redirect("/admin")
-    else:
+    if isinstance(action, type(None)):
         counts = heartbeat_db.get_stats()
         not_operational = heartbeat_db.check_operational()
         return render_template(
             "admin.html", not_operational=not_operational, counts=counts)
+    try:
+        if action == "update_knn":
+            print("Starting")
+            print("Started Thread!")
+            x_loactions, y_locations = [], []
+            counter = 0
+            work_type = "face_encodings"
+            results = heartbeat_db.get_all_work(work_type)
+            all_encodings = results
+            for encoding in all_encodings:
+                face_bounding_boxes = json.loads(encoding[2])["encoding"]
+                if len(face_bounding_boxes) > 2:
+                    x_loactions.append(np.array(face_bounding_boxes))
+                    y_locations.append(encoding[0])
+                    counter += 1
+            print(f"found {counter} encodings")
+
+            n_neighbors = int(round(math.sqrt(len(x_loactions))))
+
+            knn_clf = neighbors.KNeighborsClassifier(
+                n_neighbors=n_neighbors, algorithm="ball_tree", weights="distance"
+            )
+            knn_clf.fit(x_loactions, y_locations)
+
+            with open(MODEL_PATH, "wb") as opened_file:
+                pickle.dump(knn_clf, opened_file)
+            with open("trained_knn_list.clf", "wb") as opened_file:
+                pickle.dump(y_locations, opened_file)
+            heartbeat_db.safe_model()
+        if action == "delete_empty":
+            print("Deleting all images with no faces detected on.")
+            heartbeat_db.delete_empty()
+    except peewee.InterfaceError as error_message:
+        print("PeeWee Interface broken!")
+        mysql_db = heartbeat_db.init_db(
+            heartbeat_config.config["db_type"],
+            heartbeat_config.config["db_auth"],
+            heartbeat_config.config["object_storage_type"],
+            heartbeat_config.config["object_storage_auth"],
+        )
+        print(error_message)
+    finally:
+        return redirect("/admin")
+        
 
 
 @app.route("/upload_new", methods=["POST", "GET"])
