@@ -1,37 +1,32 @@
-import peewee
-import requests
-from peewee import MySQLDatabase, SqliteDatabase, JOIN
-from peewee import CharField, ForeignKeyField, DateTimeField, fn, BooleanField, TimestampField
-import os
-import peewee
-import boto3
-from flask import send_file
-import json
-import datetime
-import os
-import time
-import random
-from swiftclient.service import SwiftService, SwiftError
-import swiftclient
-from swiftclient.exceptions import ClientException
 import hashlib
+import json
+import os
+import random
+import time
 from shutil import copyfile
-import tqdm
 
-bucket = "heartbeat-images"
-object_storage_auth = ""
-options = {"region_name": "DE1"}
+import boto3
+import peewee
+import swiftclient
+import tqdm
+from peewee import (JOIN, BooleanField, CharField)
+
+BUCKET = "heartbeat-images"
+OBJECT_STORAGE_AUTH = ""
+OPTIONS = {"region_name": "DE1"}
 BUF_SIZE = 1024
+
 
 def hash_file(filename):
     sha1 = hashlib.sha1()
-    with open(filename, 'rb') as f:
+    with open(filename, 'rb') as opened_file:
         while True:
-            data = f.read(BUF_SIZE)
+            data = opened_file.read(BUF_SIZE)
             if not data:
                 break
             sha1.update(data)
     return sha1.hexdigest()
+
 
 def setup_classes(mysql_db):
     class Image(peewee.Model):
@@ -56,7 +51,7 @@ def setup_classes(mysql_db):
     return Image, Results
 
 
-class StoredImage(object):
+class StoredImage:
     def __init__(self, filename, object_storage_type, object_storage_auth):
         self.filename = filename
         self.object_storage_type = object_storage_type
@@ -72,42 +67,42 @@ class StoredImage(object):
     def safe_file(self):
         if self.object_storage_type == "openstack":
             swift_client = swiftclient.client.Connection(
-                os_options=options, **self.object_storage_auth
+                os_options=OPTIONS, **self.object_storage_auth
             )
             with open(self.filename, "rb") as local:
                 swift_client.put_object(
-                    bucket,
+                    BUCKET,
                     self.just_name,
                     contents=local,
                     content_type="image/" + self.filename.split(".")[-1],
                 )
             try:
-                assert type(swift_client.head_object(bucket, self.just_name)) != type(
-                    None
-                )
-            except AssertionError as e:
-                print(e, str(e))
+                assert not isinstance(swift_client.head_object(
+                    BUCKET, self.just_name), type(None))
+            except AssertionError as error:
+                print(error, str(error))
             finally:
                 swift_client.close()
 
         elif self.object_storage_type == "s3":
-            self.s3_client.upload_file(self.filename, bucket, self.just_name)
+            self.s3_client.upload_file(self.filename, BUCKET, self.just_name)
             print("uploaded to s3!")
 
         elif self.object_storage_type == "local":
-            copyfile(self.filename, os.path.join("./heartbeat-images", self.filename.split("/")[-1]))
+            copyfile(self.filename, os.path.join(
+                "./heartbeat-images", self.filename.split("/")[-1]))
 
     def remove_file(self):
         #print("Deleting {}".format(self.filename))
         if self.object_storage_type == "openstack":
             raise NotImplementedError
-            
-        elif self.object_storage_type == "s3":
-            #print(self.filename)
-            delete = self.s3_client.delete_object(Bucket=bucket, Key=self.filename)
-            #print(delete)
 
-            
+        if self.object_storage_type == "s3":
+            # print(self.filename)
+            self.s3_client.delete_object(
+                Bucket=BUCKET, Key=self.filename)
+            # print(delete)
+
         elif self.object_storage_type == "local":
             os.remove(os.path.join("./heartbeat-images", self.filename))
         #print("removed {}".format(self.filename))
@@ -115,43 +110,49 @@ class StoredImage(object):
     def load_file(self):
         if self.object_storage_type == "openstack":
             swift_client = swiftclient.client.Connection(
-                os_options=options, **self.object_storage_auth
+                os_options=OPTIONS, **self.object_storage_auth
             )
-            resp_headers, obj_contents = swift_client.get_object(bucket, self.filename)
+            resp_headers, obj_contents = swift_client.get_object(
+                BUCKET, self.filename)
             with open(os.path.join("./", self.filename), "wb") as local:
                 local.write(obj_contents)
             swift_client.close()
 
         elif self.object_storage_type == "s3":
-            with open(os.path.join("./", self.filename), "wb") as f:
-                self.s3_client.download_fileobj(bucket, self.filename, f)
+            with open(os.path.join("./", self.filename), "wb") as opened_file:
+                self.s3_client.download_fileobj(
+                    BUCKET, self.filename, opened_file)
 
         elif self.object_storage_type == "local":
-            copyfile(os.path.join("./heartbeat-images", self.filename.split("/")[-1]),os.path.join(".",self.filename))
+            copyfile(os.path.join("./heartbeat-images",
+                     self.filename.split("/")[-1]), os.path.join(".", self.filename))
 
     def get_all_files(self):
         if self.object_storage_type == "openstack":
             raise NotImplementedError
-        elif self.object_storage_type == "s3":
+        if self.object_storage_type == "s3":
             files = []
-            for key in self.s3_client.list_objects(Bucket=bucket)['Contents']:
+            for key in self.s3_client.list_objects(Bucket=BUCKET)['Contents']:
                 files.append(key["Key"])
             return files
 
-        elif self.object_storage_type == "local":
-            files = [] 
-            for f in os.listdir("./heartbeat-images"):
-                if os.path.isfile(os.path.join("./heartbeat-images",f)):
-                    files.append(f)
+        if self.object_storage_type == "local":
+            files = []
+            for filename in os.listdir("./heartbeat-images"):
+                if os.path.isfile(os.path.join("./heartbeat-images", filename)):
+                    files.append(filename)
             return files
 
     def delete_locally(self):
         os.remove(self.filename)
 
 
-class HeartbeatDB(object):
+class HeartbeatDB:
     def __init__(self):
-        pass
+        self.Image, self.Results = None, None
+        self.db_type = None
+        self.object_storage_type = None
+        self.object_storage_auth = None
 
     def init_db(self, db_type, dbconfig, object_storage_type, object_storage_auth):
         mysql_db = peewee.MySQLDatabase(**dbconfig)
@@ -164,17 +165,21 @@ class HeartbeatDB(object):
         mysql_db.close()
         return mysql_db
 
-    def upload_file(self, filename, origin="unknown", other_data={"unknown": 1}):
+    def upload_file(self, filename, other_data, origin="unknown"):
+        if not other_data:
+            other_data = {"unknown": 1}
         path = os.path.join("./uploaded_pics", filename)
         file_hash = hash_file(path)
-        for result in self.Image.select().where(self.Image.file_hash==file_hash).execute():
+        for result in self.Image.select().where(self.Image.file_hash == file_hash).execute():
             res = {
-                "status":"error",
-                "message":"This Image is already in our Database."
+                "status": "error",
+                "message": "This Image is already in our Database."
             }
-            return res  #An Image with the same hash is already in the database.
+            # An Image with the same hash is already in the database.
+            return res
         other_data = json.dumps(other_data)
-        image = self.Image(filename=filename, origin=origin, other_data=other_data, file_hash=file_hash)
+        image = self.Image(filename=filename, origin=origin,
+                           other_data=other_data, file_hash=file_hash)
         image.save()
         stored_image = StoredImage(
             path, self.object_storage_type, self.object_storage_auth
@@ -182,10 +187,11 @@ class HeartbeatDB(object):
         stored_image.safe_file()
         stored_image.delete_locally()
         res = {
-            "status":"success",
-            "message":"This image got assigned ID {}. Permalink: /api/download_image?image_id={}".format(image.id,image.id),
-            "id":image.id,
-            "link":"/api/download_image?image_id={}".format(image.id)
+            "status": "success",
+            "message": f"This image got assigned ID {image.id}. \
+                Permalink: /api/download_image?image_id={image.id}",
+            "id": image.id,
+            "link": f"/api/download_image?image_id={image.id}"
         }
         return res
 
@@ -196,27 +202,29 @@ class HeartbeatDB(object):
         )
         stored_image.load_file()
         return filename
-        
 
     def get_all_work(self, work_type):
         query = self.Results.select().where(self.Results.result_type == work_type)
         results = []
-        for x in query:
-            results.append([x.image_id, x.id, x.result])
+        for result in query:
+            results.append([result.image_id, result.id, result.result])
         return results
 
     def request_work(self, work_type):
-        query = self.Image.select().where(self.Image.face_rec_worked == False).order_by(peewee.fn.Rand()).limit(60)
+        query = self.Image.select().where(self.Image.face_rec_worked is
+                                          False).order_by(peewee.fn.Rand()).limit(60)
         results = []
-        for x in query:
-            results.append(x.id)
+        for result in query:
+            results.append(result.id)
         random.shuffle(results)
         return results
 
     def submit_work(self, work_type, image_id, result):
-        result = self.Results(image_id=image_id, result=result, result_type=work_type)
+        result = self.Results(
+            image_id=image_id, result=result, result_type=work_type)
         result.save()
-        query = self.Image.update(face_rec_worked=True).where(self.Image.id == image_id)
+        query = self.Image.update(face_rec_worked=True).where(
+            self.Image.id == image_id)
         query.execute()
 
     def get_imgobj_from_id(self, image_id):
@@ -226,7 +234,7 @@ class HeartbeatDB(object):
         if os.path.isfile("trained_knn_list.clf"):
             if int(os.path.getmtime('trained_knn_list.clf')) < (int(time.time()-3600)):
                 print("Model is already new enough")
-                return
+                return 0
         print("Downloading model.")
         remotelist = StoredImage(
             "trained_knn_list.clf", self.object_storage_type, self.object_storage_auth
@@ -240,8 +248,6 @@ class HeartbeatDB(object):
             return 0
         except FileNotFoundError:
             return 1
-        
-        
 
     def safe_model(self):
         remotelist = StoredImage(
@@ -254,15 +260,21 @@ class HeartbeatDB(object):
         remotefile.safe_file()
 
     def get_stats(self):
-        count_processed = self.Image.select().where(self.Image.face_rec_worked == True).count()
+        count_processed = self.Image.select().where(
+            self.Image.face_rec_worked is True).count()
         count_total = self.Image.select().count()
-        count_encodings = self.Results.select().where(self.Results.result != "{\"encoding\": []}").count()
-        return [count_processed,count_total,count_encodings]
+        count_encodings = self.Results.select().where(
+            self.Results.result != "{\"encoding\": []}").count()
+        return [count_processed, count_total, count_encodings]
 
     def delete_empty(self):
-        res = self.Results.delete().where(self.Results.result=="{\"encoding\": []}").execute()
-        print("Deleted {} empty encodings.".format(res))
-        query = self.Image.select().join(self.Results, JOIN.LEFT_OUTER, on=self.Image.id==self.Results.image_id).where(self.Results.image_id.is_null())
+        res = self.Results.delete().where(self.Results.result ==
+                                          "{\"encoding\": []}").execute()
+        print(f"Deleted {res} empty encodings.")
+        query = self.Image.select().join(self.Results, JOIN.LEFT_OUTER,
+                                         on=self.Image.id ==
+                                         self.Results.image_id).where(
+            self.Results.image_id.is_null())
         print(query)
         for image in tqdm.tqdm(query):
             #print(image.id, image.filename, image.face_rec_worked)
@@ -273,20 +285,21 @@ class HeartbeatDB(object):
                 stored_image.remove_file()
                 image.delete_instance()
         print("Checking if DB and filestorage are in sync...")
-        stored_image = StoredImage("dummyfile", self.object_storage_type,self.object_storage_auth)
+        stored_image = StoredImage(
+            "dummyfile", self.object_storage_type, self.object_storage_auth)
         files = stored_image.get_all_files()
-        for f in files:
-            hits = self.Image.select().where(self.Image.filename==f).count()
+        for filename in files:
+            hits = self.Image.select().where(self.Image.filename == filename).count()
             if hits < 1:
-                print("File {} was not found in db".format(f))
+                print(f"File {filename} was not found in db")
             else:
-                print("File {} was found in db".format(f))
+                print(f"File {filename} was found in db")
 
     def check_operational(self):
-        cp, ct, ce = self.get_stats()
-        not_operational = ce <= 5
-        ms = self.retrieve_model()
-        if not not_operational: 
-            not_operational = ms
+        count_processed, count_total, count_encodings = self.get_stats()
+        not_operational = count_encodings <= 5
+        retrieve_model_unsuccessful = self.retrieve_model()
+        if not not_operational:
+            not_operational = retrieve_model_unsuccessful
 
         return not_operational

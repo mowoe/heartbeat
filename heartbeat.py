@@ -1,24 +1,24 @@
 import hashlib
-import time
-import os
 import json
 import math
+import os
 import os.path
 import pickle
-import urllib
+import time
 import traceback
+import urllib
 
 import face_recognition
+import flask_monitoringdashboard as dashboard
 import numpy as np
 import peewee
-
-import flask_monitoringdashboard as dashboard
+from flask import (Flask, g, redirect, render_template, request, send_file,
+                   send_from_directory)
 from sklearn import neighbors
-from flask import Flask, request, send_file, render_template, redirect, send_from_directory, g
-from heartbeat_db import HeartbeatDB
 
-from distribute_work import facerec
 import read_config
+from distribute_work import facerec
+from heartbeat_db import HeartbeatDB
 
 heartbeat_config = read_config.HeartbeatConfig()
 heartbeat_config.setup()
@@ -116,7 +116,7 @@ def add_image():
         print(information)
         print("Uploading to DB and OS...")
         start_time = time.time()
-        res = heartbeat_db.upload_file(new_filename, origin, information)
+        res = heartbeat_db.upload_file(filename=new_filename, origin=origin, other_data=information)
         print(f"Uploading to DB took {str(time.time() - start_time)} seconds")
         return constr_resp(res['status'], res['message'])
     except peewee.InterfaceError as error:
@@ -150,7 +150,7 @@ def add_image_file():
         file.save(os.path.join(UPLOAD_FOLDER, new_filename))
         print(information)
         information = json.loads(information)
-        res = heartbeat_db.upload_file(new_filename, origin, information)
+        res = heartbeat_db.upload_file(filename=new_filename, origin=origin, other_data=information)
         if res["status"] == "success":
             url = "{}/api/download_image?image_id={}".format(
                 heartbeat_config.config["hostname"], res["id"])

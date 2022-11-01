@@ -18,7 +18,7 @@ jobs:
         run: pip install -r requirements.txt
       - name: run lint
         shell: bash
-        run: pylint -d C0116 -d C0114 --fail-under=9 *.py
+        run: pylint -d C0116 -d C0115 -d C0114 --fail-under=8.5 *.py
 
   build_and_test:
     runs-on: ubuntu-latest
