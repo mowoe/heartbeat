@@ -26,7 +26,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Set up Docker Buildc
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Start elasticmq service
         shell: bash
         run: docker run --network host -d softwaremill/elasticmq-native
@@ -83,7 +83,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
